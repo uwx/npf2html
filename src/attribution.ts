@@ -76,5 +76,5 @@ export interface AppAttribution {
    * A specific logo that the client should use with the third-party app
    * attribution.
    */
-  logo: VisualMedia;
+  logo?: VisualMedia;
 }
