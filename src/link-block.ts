@@ -1,7 +1,7 @@
 import type {VisualMedia} from './media';
 
 /**
- * An NPG link type content block.
+ * An NPF link type content block.
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-link
  */
