@@ -5,7 +5,10 @@ import {BlogInfo} from './blog-info';
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-text
  */
-export interface TextBlock {
+export type TextBlock = TextBlockNoIndent | TextBlockIndented;
+
+/** The base interface for all types of text blocks. */
+interface TextBlockBase {
   type: 'text';
 
   /** The text to use inside this block. */
@@ -26,9 +29,6 @@ export interface TextBlock {
     | 'ordered-list-item'
     | 'unordered-list-item';
 
-  /** @see https://www.tumblr.com/docs/npf#text-block-subtype-list-item */
-  indent_level?: number;
-
   /**
    * Inline formatting for this text.
    *
@@ -37,19 +37,37 @@ export interface TextBlock {
   formatting?: InlineFormat[];
 }
 
-/** Inline formatting types. */
-export type InlineFormat =
-  | InlineFormatBasic
-  | InlineFormatLink
-  | InlineFormatMention
-  | InlineFormatColor;
+/** A text block of a type that doesn't allow indentation. */
+export interface TextBlockNoIndent extends TextBlockBase {
+  subtype?: 'heading1' | 'heading2' | 'quirky' | 'quote' | 'chat';
+}
+
+/** A text block of a type that allows indentation. */
+export interface TextBlockIndented extends TextBlockBase {
+  /**
+   * The subtype of text block.
+   *
+   * @see https://www.tumblr.com/docs/npf#text-block-subtypes
+   */
+  subtype: 'indented' | 'ordered-list-item' | 'unordered-list-item';
+
+  /** @see https://www.tumblr.com/docs/npf#text-block-subtype-list-item */
+  indent_level?: number;
+}
 
 /**
  * A single piece of inline formatting for a {@link TextBlock}.
  *
  * @see https://www.tumblr.com/docs/npf#inline-formatting-within-a-text-block
  */
-export interface InlineFormatBase {
+export type InlineFormat =
+  | InlineFormatBasic
+  | InlineFormatLink
+  | InlineFormatMention
+  | InlineFormatColor;
+
+/** The base interface for all types of inline formatting. */
+interface InlineFormatBase {
   /** The starting index of the formatting range (inclusive). */
   start: number;
 

@@ -26,5 +26,5 @@ export interface LinkBlock {
   display_url?: string;
 
   /** An image media object to use as a "poster" for the link. */
-  poster?: VisualMedia;
+  poster?: VisualMedia[];
 }
