@@ -448,11 +448,11 @@ function renderTextNoIndent(
     case 'heading2':
       return `<h2>${text}</h2>`;
     case 'quirky':
-      return `<p class="${options.prefix}-text-quirky">${text}</p>`;
+      return `<p class="${options.prefix}-block-text-quirky">${text}</p>`;
     case 'quote':
-      return `<p class="${options.prefix}-text-quote">${text}</p>`;
+      return `<p class="${options.prefix}-block-text-quote">${text}</p>`;
     case 'chat':
-      return `<p class="${options.prefix}-text-chat">${text}</p>`;
+      return `<p class="${options.prefix}-block-text-chat">${text}</p>`;
     default:
       return `<p>${text}</p>`;
   }
@@ -517,22 +517,26 @@ export default function npf2html(
   for (let i = 0; i < blocks.length; i++) {
     // Consumes all elements within a indented text block and renders them to a
     // string.
-    const collectAndRenderIndented = (first: TextBlockIndented): string => {
+    const collectAndRenderIndented = (): string => {
+      const first = blocks[i] as TextBlockIndented;
       const indentation = first.indent_level ?? 0;
       const blocksAndNested: [
         TextBlockIndented,
         ...Array<TextBlockIndented | string>,
       ] = [first];
-      for (; i < blocks.length - 1; i++) {
+
+      while (i < blocks.length - 1) {
         const sibling = blocks[i + 1];
         if (!isTextBlockIndented(sibling)) break;
         const siblingIndentation = sibling.indent_level ?? 0;
         if (siblingIndentation < indentation) break;
-        if (siblingIndentation === first.indent_level) {
+        if (siblingIndentation === indentation) {
           if (sibling.subtype !== first.subtype) break;
+          i++;
           blocksAndNested.push(sibling);
         } else {
-          blocksAndNested.push(collectAndRenderIndented(sibling));
+          i++;
+          blocksAndNested.push(collectAndRenderIndented());
         }
       }
 
@@ -559,7 +563,7 @@ export default function npf2html(
 
       case 'text':
         if (isTextBlockIndented(block)) {
-          result += collectAndRenderIndented(block);
+          result += collectAndRenderIndented();
         } else {
           result += renderTextNoIndent(block, renderOptions);
         }
