@@ -39,6 +39,7 @@
     "typescript": "^5.4.3"
   },
   "ava": {
+    "files": ["test/**.test.ts"],
     "typescript": {
       "rewritePaths": {
         "test/": "build/test/"

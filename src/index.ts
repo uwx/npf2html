@@ -162,11 +162,11 @@ function renderAudio(block: AudioBlock, options: RenderOptions): string {
     let result = `<figure class="${options.prefix}-block-audio">`;
 
     const hasText = block.title || block.artist || block.album;
-    const hasCaption = block.poster || hasText;
+    const hasCaption = block.poster || block.attribution || hasText;
     if (block.media) {
       result += `<audio controls src="${escapeHtml(block.media[0].url)}"></audio>`;
       if (hasCaption) result += '<figcaption>';
-    } else if (hasText) {
+    } else {
       result += `<a href="${escapeHtml(block.url!)}">`;
     }
 
@@ -193,7 +193,8 @@ function renderAudio(block: AudioBlock, options: RenderOptions): string {
         escapeHtml(block.album) +
         '</span>';
     }
-    if (hasText && !block.media) {
+    if (!block.media) {
+      if (!hasText) result += escapeHtml(block.url!);
       result += '</a>';
     }
 
@@ -206,9 +207,15 @@ function renderAudio(block: AudioBlock, options: RenderOptions): string {
     result += '</figure>';
     return result;
   } else if (block.embed_html) {
-    return block.embed_html;
+    return (
+      `<figure class="${options.prefix}-block-audio">${block.embed_html}` +
+      '</figure>'
+    );
   } else {
-    return `<iframe src="${escapeHtml(block.embed_url!)}"></iframe>`;
+    return (
+      `<iframe class="${options.prefix}-block-audio"` +
+      ` src="${escapeHtml(block.embed_url!)}"></iframe>`
+    );
   }
 }
 
