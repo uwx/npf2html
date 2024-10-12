@@ -273,7 +273,7 @@ function renderLink(block: LinkBlock, options: RenderOptions): string {
 
 /** Converts {@link block} to HTML. */
 function renderPaywall(block: PaywallBlock, options: RenderOptions): string {
-  if (!block.is_visible) return '';
+  if (block.is_visible === false) return '';
 
   let result =
     `<a class="${options.prefix}-block-paywall ` +
@@ -289,6 +289,7 @@ function renderPaywall(block: PaywallBlock, options: RenderOptions): string {
   if (block.text) {
     result += `<p>${escapeHtml(block.text)}</p>`;
   }
+  result += '</a>';
   return result;
 }
 
