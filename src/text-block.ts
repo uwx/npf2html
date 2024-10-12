@@ -101,7 +101,7 @@ export interface InlineFormatLink extends InlineFormatBase {
  *
  * @see https://www.tumblr.com/docs/npf#inline-format-type-mention
  */
-export interface InlineFormatMention {
+export interface InlineFormatMention extends InlineFormatBase {
   type: 'mention';
 
   /** The mentioned blog. */
@@ -113,7 +113,7 @@ export interface InlineFormatMention {
  *
  * @see https://www.tumblr.com/docs/npf#inline-format-type-color
  */
-export interface InlineFormatColor {
+export interface InlineFormatColor extends InlineFormatBase {
   type: 'color';
 
   /** The color to use, in standard hex format, with leading #. */
