@@ -248,16 +248,24 @@ function renderLink(block: LinkBlock, options: RenderOptions): string {
   if (block.poster) {
     result += renderImageMedia(block.poster, options);
   }
-  result += `<h2>${escapeHtml(block.title ?? block.display_url ?? block.url)}</h2>`;
-  if (block.description) {
-    result +=
-      `<p class="${options.prefix}-block-link-description">` +
-      `${escapeHtml(block.description)}</p>`;
-  }
+  result +=
+    '<h2>' +
+    escapeHtml(block.title ?? block.display_url ?? block.url) +
+    '</h2>';
   if (block.site_name) {
     result +=
       `<p class="${options.prefix}-block-link-site">` +
       `${escapeHtml(block.site_name)}</p>`;
+  }
+  if (block.author) {
+    result +=
+      `<p class="${options.prefix}-block-link-author">` +
+      `${escapeHtml(block.author)}</p>`;
+  }
+  if (block.description) {
+    result +=
+      `<p class="${options.prefix}-block-link-description">` +
+      `${escapeHtml(block.description)}</p>`;
   }
   result += '</a>';
   return result;
