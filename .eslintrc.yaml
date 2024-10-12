@@ -1,0 +1,4 @@
+extends: ./node_modules/gts/
+rules:
+  # This reports ava and simply-beautiful as "unpublished".
+  n/no-unpublished-import: off
