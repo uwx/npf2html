@@ -325,8 +325,12 @@ interface InlineFormatSpan {
 
 /** Builds the list of {@link InlineFormatSpan}s for {@link block}. */
 function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
-  // Assume these are sorted by `InlineFormat.start`.
-  const formats = [...block.formatting!];
+  // Sort formats first by start (earliest to latest), then by length (longest
+  // to shortest). This ensures that earlier formats are never nested within
+  // later ones.
+  const formats = [...block.formatting!].sort((a, b) =>
+    a.start === b.start ? b.end - a.end : a.start - b.start
+  );
 
   // A stack of open spans. Because formats is sorted by start, this will be as
   // well.
@@ -337,31 +341,30 @@ function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
 
   let codePointIndex = 0;
   for (let i = 0; i < block.text.length; i++) {
-    while (codePointIndex === formats[0].start) {
+    while (codePointIndex === formats[0]?.start) {
       open.push({format: formats.shift()!, start: i, children: []});
     }
 
     const outermostClosed = open.findIndex(
       span => span.format.end === codePointIndex
     );
-    if (outermostClosed !== -1) {
-      spans.push({
-        ...open[outermostClosed],
-        end: i,
-      });
 
+    if (outermostClosed !== -1) {
       // Tumblr allows inline formats to overlap without being subsets of one
       // another. To handle this in HTML, we track the formats that aren't
       // closed yet and add them back into `open` afterwards.
       const stillOpen = [];
-      for (let j = outermostClosed + 1; j < open.length; j++) {
+      for (let j = outermostClosed; j < open.length; j++) {
         const span = open[j];
-        spans.at(-1)!.children.push({...span, end: i});
+        (j === 0 ? spans : open[j - 1].children).push({
+          ...span,
+          end: i,
+        });
         if (span.format.end > codePointIndex) {
           stillOpen.push({...span, start: i});
         }
       }
-      open.splice(outermostClosed);
+      -open.splice(outermostClosed);
       open.push(...stillOpen);
     }
 
@@ -369,6 +372,11 @@ function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
     // 0x36 == 0b110110.
     if (block.text.charCodeAt(i) >> 10 === 0x36) i++;
     codePointIndex++;
+  }
+
+  if (open.length > 0) spans.push({...open[0], end: block.text.length});
+  for (let i = 1; i < open.length; i++) {
+    spans.at(-1)!.children.push({...open[i], end: block.text.length});
   }
 
   return spans;
@@ -403,7 +411,7 @@ function renderInlineFormat(
         ` href="${escapeHtml(format.blog.url)}">${html}</a>`
       );
     case 'color':
-      return `<span style="color: ${escapeHtml(format.hex)}>${html}</span>`;
+      return `<span style="color: ${escapeHtml(format.hex)}">${html}</span>`;
   }
 }
 
@@ -420,7 +428,7 @@ function formatText(block: TextBlock, options: RenderOptions): string {
     children: InlineFormatSpan[]
   ): string => {
     let result = '';
-    const i = start;
+    let i = start;
     for (const child of children) {
       result +=
         escapeHtml(block.text.substring(i, child.start)) +
@@ -429,11 +437,13 @@ function formatText(block: TextBlock, options: RenderOptions): string {
           child.format,
           options
         );
+      i = child.end;
     }
     return result + escapeHtml(block.text.substring(i, end));
   };
 
-  return renderSpans(0, block.text.length, buildFormatSpans(block));
+  const spans = buildFormatSpans(block);
+  return renderSpans(0, block.text.length, spans);
 }
 
 /** Converts {@link block} to HTML. */
