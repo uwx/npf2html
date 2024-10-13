@@ -167,7 +167,9 @@ function renderAttribution(
   const href =
     attribution.type === 'blog' ? attribution.blog.url : attribution.url;
   let result =
-    `<a class="${options.prefix}-attribution" ` + `href="${escapeHtml(href)}">`;
+    `<a class="${options.prefix}-attribution` +
+    ` ${options.prefix}-attribution-${attribution.type}"` +
+    ` href="${escapeHtml(href)}">`;
 
   switch (attribution.type) {
     case 'post':
