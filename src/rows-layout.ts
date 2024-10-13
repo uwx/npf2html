@@ -8,6 +8,9 @@ export interface RowsLayout {
 
   /** A list of ways to display sets of rows. */
   display: RowsDisplay[];
+
+  /** How the content should be truncated. */
+  truncate_after?: number;
 }
 
 /** An object describing how to display a single row. */
@@ -21,7 +24,4 @@ export interface RowsDisplay {
    * @see https://www.tumblr.com/docs/npf#layout-block-display-mode-carousel
    */
   mode?: {type: 'carousel'};
-
-  /** How the content should be truncated. */
-  truncate_after?: number;
 }

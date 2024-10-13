@@ -5,7 +5,7 @@ import type {ImageBlock} from './image-block';
 import type {LinkBlock} from './link-block';
 import type {VisualMedia} from './media';
 import type {PaywallBlock} from './paywall-block';
-import type {RowsLayout} from './rows-layout';
+import type {RowsDisplay, RowsLayout} from './rows-layout';
 import type {
   TextBlock,
   TextBlockIndented,
@@ -55,9 +55,19 @@ export interface Options {
   prefix?: string;
 
   /**
-   * The layouts, usually provided in a post object's `layout` field.
+   * The layouts describing how to group different content blocks.
+   *
+   * This is available from `post.layout` in the Tumblr API.
    */
   layout?: Layout[];
+
+  /**
+   * The {@link VisualMedia} to use for the asker's avatar if the post being
+   * rendered is an ask.
+   *
+   * This is avialable from `post.asking_avatar` in the Tumblr API.
+   */
+  askingAvatar?: VisualMedia[];
 }
 
 /**
@@ -69,6 +79,9 @@ export interface Options {
 interface RenderOptions {
   /** @see Options.prefix */
   prefix: string;
+
+  /** @see Options.askingAvatar */
+  askingAvatar: VisualMedia[];
 }
 
 /**
@@ -89,6 +102,30 @@ export type ContentBlock =
  * @see https://www.tumblr.com/docs/npf#layout-blocks
  */
 export type Layout = AskLayout | RowsLayout;
+
+/** The media for the default avatar to use for asks if none is provided. */
+const anonymousAvatar: VisualMedia[] = [
+  {
+    width: 128,
+    height: 128,
+    url: 'https://assets.tumblr.com/images/anonymous_avatar_128.gif',
+  },
+  {
+    width: 96,
+    height: 96,
+    url: 'https://assets.tumblr.com/images/anonymous_avatar_96.gif',
+  },
+  {
+    width: 64,
+    height: 64,
+    url: 'https://assets.tumblr.com/images/anonymous_avatar_64.gif',
+  },
+  {
+    width: 48,
+    height: 48,
+    url: 'https://assets.tumblr.com/images/anonymous_avatar_48.gif',
+  },
+];
 
 /** Returns {@link unsafe} with all HTML escaped. */
 function escapeHtml(unsafe: string): string {
@@ -512,6 +549,100 @@ function isTextBlockIndented(block: ContentBlock): block is TextBlockIndented {
 }
 
 /**
+ * An interface for layouts that apply to specific adjacent groups of content
+ * blocks that *aren't* just rendered as individual rows.
+ */
+interface LayoutGroup {
+  /** The layout describing how to render this group. */
+  layout: AskLayout | RowsDisplay;
+
+  /** The inclusive block index on which the group starts. */
+  start: number;
+
+  /** The exclusive block index before which the group ends. */
+  end: number;
+}
+
+/**
+ * If {@link options} includes layouts, this returns a list of {@link
+ * LayoutGroup}s that indicate non-default layouts, ordered by start index.
+ *
+ * This assumes that all {@link LayoutGroup}s are contiguous and
+ * non-overlapping.
+ */
+function buildLayoutGroups(options?: Options): LayoutGroup[] {
+  const result: Array<AskLayout | RowsDisplay> = [];
+  for (const layout of options?.layout ?? []) {
+    if (layout.type === 'ask') {
+      result.push(layout);
+    } else {
+      for (const display of layout.display) {
+        if (display.blocks.length === 1) continue;
+        result.push(display);
+      }
+    }
+  }
+
+  return result
+    .map(layout => ({
+      layout,
+      start: Math.min(...layout.blocks),
+      end: Math.max(...layout.blocks) + 1,
+    }))
+    .sort((a, b) => a.start - b.start);
+}
+
+/** Wraps {@link html} as an ask. */
+function renderAskLayout(
+  layout: AskLayout,
+  html: string,
+  options: RenderOptions
+): string {
+  let result = `<div class="${options.prefix}-layout-ask">`;
+  if (layout.attribution) {
+    result += `<a href="${escapeHtml(layout.attribution.blog.url)}">`;
+  } else {
+    // Always wrap the avatar in an A tag even if there's nothing to link to to
+    // make it easier to style consistently.
+    result += '<a>';
+  }
+  result +=
+    renderImageMedia(options.askingAvatar, options) +
+    '</a><figure><figcaption>';
+  if (layout.attribution) {
+    result += `<a href="${escapeHtml(layout.attribution.blog.url)}">`;
+  }
+  result +=
+    '<strong>' +
+    escapeHtml(layout.attribution?.blog?.name ?? 'Anonymous') +
+    '</strong> asked:';
+  if (layout.attribution) result += '</a>';
+  result += '</figcaption>' + html + '</figure></div>';
+  return result;
+}
+
+/** Wraps {@link html} as single row. */
+function renderRowLayout(
+  display: RowsDisplay,
+  html: string,
+  options: RenderOptions
+): string {
+  const classes = [`${options.prefix}-layout-row`];
+  if (display?.mode?.type) {
+    classes.push(`${options.prefix}-layout-row-${display?.mode?.type}`);
+  }
+  return `<div class="${classes.join(' ')}">${html}</div>`;
+}
+
+/** Renders {@link html} as a "below the fold" read more. */
+function renderTruncate(html: string, options: RenderOptions): string {
+  return (
+    `<details class="${options.prefix}-layout-truncate">` +
+    `<summary>Keep reading</summary>${html}</details>`
+  );
+}
+
+/**
  * Converts each NPF block in {@link blocks} to plain HTML and concatenates them
  * into a single string.
  */
@@ -519,10 +650,21 @@ export default function npf2html(
   blocks: ContentBlock[],
   options?: Options
 ): string {
-  const renderOptions = {prefix: options?.prefix ?? 'npf'};
+  const renderOptions = {
+    prefix: options?.prefix ?? 'npf',
+    askingAvatar: options?.askingAvatar ?? anonymousAvatar,
+  };
   let result = '';
 
-  // TODO: handle layouts
+  const truncateAfter = options?.layout?.find(
+    layout => layout.type === 'rows'
+  )?.truncate_after;
+  let truncateIndex: number | undefined;
+
+  const layoutGroups = buildLayoutGroups(options);
+
+  // HTML contents of the current `layoutGroup`, if there is one.
+  let currentGroup = '';
 
   for (let i = 0; i < blocks.length; i++) {
     // Consumes all elements within a indented text block and renders them to a
@@ -553,32 +695,61 @@ export default function npf2html(
       return renderIndented(blocksAndNested, renderOptions);
     };
 
+    let blockResult: string;
     const block = blocks[i];
     switch (block.type) {
       case 'audio':
-        result += renderAudio(block, renderOptions);
+        blockResult = renderAudio(block, renderOptions);
         break;
 
       case 'image':
-        result += renderImage(block, renderOptions);
+        blockResult = renderImage(block, renderOptions);
         break;
 
       case 'link':
-        result += renderLink(block, renderOptions);
+        blockResult = renderLink(block, renderOptions);
         break;
 
       case 'paywall':
-        result += renderPaywall(block, renderOptions);
+        blockResult = renderPaywall(block, renderOptions);
         break;
 
       case 'text':
         if (isTextBlockIndented(block)) {
-          result += collectAndRenderIndented();
+          blockResult = collectAndRenderIndented();
         } else {
-          result += renderTextNoIndent(block, renderOptions);
+          blockResult = renderTextNoIndent(block, renderOptions);
         }
         break;
     }
+
+    const group = layoutGroups[0];
+    if (group && i >= group.start) {
+      currentGroup += blockResult;
+
+      if (i + 1 === group.end) {
+        layoutGroups.shift();
+        if ('type' in group.layout) {
+          result += renderAskLayout(group.layout, currentGroup, renderOptions);
+        } else {
+          result += renderRowLayout(group.layout, currentGroup, renderOptions);
+        }
+        currentGroup = '';
+      }
+    } else {
+      result += blockResult;
+    }
+
+    if (i === truncateAfter) {
+      truncateIndex = result.length;
+    }
   }
+
+  if (truncateIndex !== undefined) {
+    result =
+      result.substring(0, truncateIndex) +
+      renderTruncate(result.substring(truncateIndex), renderOptions);
+  }
+
   return result;
 }
