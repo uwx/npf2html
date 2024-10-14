@@ -12,6 +12,7 @@ import type {
   TextBlockNoIndent,
   InlineFormat,
 } from './text-block';
+import type {VideoBlock} from './video-block';
 
 export type {AskLayout} from './ask-layout';
 export type {
@@ -94,7 +95,8 @@ export type ContentBlock =
   | ImageBlock
   | LinkBlock
   | PaywallBlock
-  | TextBlock;
+  | TextBlock
+  | VideoBlock;
 
 /**
  * A layout indicating how to lay out contents blocks.
@@ -197,9 +199,8 @@ function renderAttribution(
 
 /** Converts {@link block} to HTML. */
 function renderAudio(block: AudioBlock, options: RenderOptions): string {
+  let result = `<figure class="${options.prefix}-block-audio">`;
   if (block.media || !(block.embed_html || block.embed_url)) {
-    let result = `<figure class="${options.prefix}-block-audio">`;
-
     const hasText = block.title || block.artist || block.album;
     const hasCaption = block.poster || block.attribution || hasText;
     if (block.media) {
@@ -242,20 +243,20 @@ function renderAudio(block: AudioBlock, options: RenderOptions): string {
     }
 
     if (block.media && hasCaption) result += '</figcaption>';
-
-    result += '</figure>';
-    return result;
-  } else if (block.embed_html) {
-    return (
-      `<figure class="${options.prefix}-block-audio">${block.embed_html}` +
-      '</figure>'
-    );
   } else {
-    return (
-      `<iframe class="${options.prefix}-block-audio"` +
-      ` src="${escapeHtml(block.embed_url!)}"></iframe>`
-    );
+    result += block.embed_html
+      ? block.embed_html
+      : `<iframe src="${escapeHtml(block.embed_url!)}"></iframe>`;
+
+    if (block.attribution) {
+      result +=
+        '<figcaption>' +
+        renderAttribution(block.attribution, options) +
+        '</figcaption>';
+    }
   }
+  result += '</figure>';
+  return result;
 }
 
 /** Converts {@link block} to HTML. */
@@ -329,6 +330,55 @@ function renderPaywall(block: PaywallBlock, options: RenderOptions): string {
     result += `<p>${escapeHtml(block.text)}</p>`;
   }
   result += '</a>';
+  return result;
+}
+
+/** Converts {@link block} to HTML. */
+function renderVideo(block: VideoBlock, options: RenderOptions): string {
+  let result = `<figure class="${options.prefix}-block-video">`;
+  if (
+    block.media ||
+    !(block.embed_html || block.embed_iframe || block.embed_url)
+  ) {
+    result +=
+      '<video src="' +
+      escapeHtml(
+        block.media
+          ? block.media.reduce((biggest, current) =>
+              biggest && biggest.width > current.width ? biggest : current
+            ).url
+          : block.url!
+      ) +
+      '"';
+    if (block.poster) {
+      result +=
+        ' poster="' +
+        escapeHtml(
+          block.poster.reduce((biggest, current) =>
+            biggest && biggest.width > current.width ? biggest : current
+          ).url
+        ) +
+        '"';
+    }
+    result += '></video>';
+  } else if (block.embed_html) {
+    result += block.embed_html;
+  } else if (block.embed_iframe) {
+    result +=
+      `<iframe src="${escapeHtml(block.embed_iframe.url)}"` +
+      ` width="${block.embed_iframe.width}"` +
+      ` height="${block.embed_iframe.height}"></iframe>`;
+  } else {
+    result += `<iframe src="${escapeHtml(block.embed_url!)}"></iframe>`;
+  }
+
+  if (block.attribution) {
+    result +=
+      '<figcaption>' +
+      renderAttribution(block.attribution, options) +
+      '</figcaption>';
+  }
+  result += '</figure>';
   return result;
 }
 
@@ -714,6 +764,10 @@ export default function npf2html(
 
       case 'paywall':
         blockResult = renderPaywall(block, renderOptions);
+        break;
+
+      case 'video':
+        blockResult = renderVideo(block, renderOptions);
         break;
 
       case 'text':

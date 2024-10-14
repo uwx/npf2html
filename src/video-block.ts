@@ -31,7 +31,7 @@ export interface VideoBlock {
   embed_html?: string;
 
   /** An {@link IFrame} used for constructing video iframes. */
-  embed_iframe?: string;
+  embed_iframe?: IFrame;
 
   /** A URL to the embeddable content to use as an iframe. */
   embed_url?: string;
