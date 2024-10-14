@@ -188,7 +188,7 @@ function renderAttribution(
       if (display) result += escapeHtml(display);
       if (attribution.logo) {
         result += renderImageMedia([attribution.logo], options);
-      } else if (!attribution.display_text && !attribution.app_name) {
+      } else if (!display) {
         result += escapeHtml(attribution.url);
       }
     }
@@ -239,7 +239,9 @@ function renderAudio(block: AudioBlock, options: RenderOptions): string {
     }
 
     if (block.attribution) {
+      if (!block.media) result += '<figcaption>';
       result += renderAttribution(block.attribution, options);
+      if (!block.media) result += '</figcaption>';
     }
 
     if (block.media && hasCaption) result += '</figcaption>';
@@ -336,10 +338,7 @@ function renderPaywall(block: PaywallBlock, options: RenderOptions): string {
 /** Converts {@link block} to HTML. */
 function renderVideo(block: VideoBlock, options: RenderOptions): string {
   let result = `<figure class="${options.prefix}-block-video">`;
-  if (
-    block.media ||
-    !(block.embed_html || block.embed_iframe || block.embed_url)
-  ) {
+  if (block.media) {
     result += '<video src="' + escapeHtml(block.media?.url ?? block.url!) + '"';
     if (block.poster) {
       result +=
@@ -359,8 +358,11 @@ function renderVideo(block: VideoBlock, options: RenderOptions): string {
       `<iframe src="${escapeHtml(block.embed_iframe.url)}"` +
       ` width="${block.embed_iframe.width}"` +
       ` height="${block.embed_iframe.height}"></iframe>`;
+  } else if (block.embed_url) {
+    result += `<iframe src="${escapeHtml(block.embed_url)}"></iframe>`;
   } else {
-    result += `<iframe src="${escapeHtml(block.embed_url!)}"></iframe>`;
+    result +=
+      `<a href="${escapeHtml(block.url!)}">` + escapeHtml(block.url!) + '</a>';
   }
 
   if (block.attribution) {
