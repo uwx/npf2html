@@ -340,16 +340,7 @@ function renderVideo(block: VideoBlock, options: RenderOptions): string {
     block.media ||
     !(block.embed_html || block.embed_iframe || block.embed_url)
   ) {
-    result +=
-      '<video src="' +
-      escapeHtml(
-        block.media
-          ? block.media.reduce((biggest, current) =>
-              biggest && biggest.width > current.width ? biggest : current
-            ).url
-          : block.url!
-      ) +
-      '"';
+    result += '<video src="' + escapeHtml(block.media?.url ?? block.url!) + '"';
     if (block.poster) {
       result +=
         ' poster="' +

@@ -19,7 +19,7 @@ export interface VideoBlock {
    * The {@link Media} to use for the video block. Either this, {@link url}, or
    * both will always be set.
    */
-  media?: VisualMedia[];
+  media?: VisualMedia;
 
   /**
    * The provider of the audio source, whether it's `tumblr` for native audio or

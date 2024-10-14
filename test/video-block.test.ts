@@ -1,27 +1,9 @@
 import {snapshotNpf2Html} from './utils';
 
-snapshotNpf2Html('with media: one', [
-  {
-    type: 'video',
-    media: [{url: 'https://example.org/video.mp4', width: 200, height: 200}],
-  },
-]);
-
-snapshotNpf2Html('with media: multiple', [
-  {
-    type: 'video',
-    media: [
-      {url: 'https://example.org/video-small.mp4', width: 200, height: 200},
-      {url: 'https://example.org/video-mid.mp4', width: 400, height: 400},
-      {url: 'https://example.org/video-large.mp4', width: 800, height: 800},
-    ],
-  },
-]);
-
 snapshotNpf2Html('prefers media to embed_html', [
   {
     type: 'video',
-    media: [{url: 'https://example.org/video.mp4', width: 200, height: 200}],
+    media: {url: 'https://example.org/video.mp4', width: 200, height: 200},
     embed_html: '<marquee>total nonsense</marquee>',
   },
 ]);
