@@ -193,6 +193,10 @@ Text blocks also support the following inline formatting:
 
 * `<span style="color: ...">` for colored text.
 
+**Note:** Tumblr assumes all text is rendered with whitespace preserved but text
+wrapped, equivalent to `white-space: pre-wrap` in CSS. If you don't use this
+style, it's likely that some posts won't render as the authors intended.
+
 ### Video Block
 
 Most video blocks look like:
