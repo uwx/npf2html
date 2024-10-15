@@ -173,6 +173,23 @@ There are three types of paywall:
   `npf-block-paywall-divider`, and has only text, no title. It may also have a
   `--npf-paywall-color` CSS variable set with the divider color.
 
+### Poll Block
+
+Poll blocks look like:
+
+```html
+<div class="npf-block-poll">
+  <h2>...</h2> <!-- poll question -->
+  <ul>
+    <li>...</li> <!-- poll option -->
+    ...
+  </ul>
+</div>
+```
+
+Polls can't be interacted with outside the Tumblr web interface, so this doesn't
+include any interactive elements.
+
 ### Text Block
 
 Text blocks are rendered either as `<h1>`s, `<h2>`s, `<blockquote>`s, `<ul>`s,
@@ -318,5 +335,4 @@ A truncation, also known as a "read more", looks like:
 
 ## TODO
 
-* Support polls (despite not being documented)
 * Allow callers to override specific renderings

@@ -5,6 +5,7 @@ import type {ImageBlock} from './image-block';
 import type {LinkBlock} from './link-block';
 import type {VisualMedia} from './media';
 import type {PaywallBlock} from './paywall-block';
+import type {PollBlock} from './poll-block';
 import type {RowsDisplay, RowsLayout} from './rows-layout';
 import type {
   TextBlock,
@@ -26,6 +27,7 @@ export type {
 export type {AudioBlock} from './audio-block';
 export type {BlogInfo} from './blog-info';
 export type {Media, VisualMedia} from './media';
+export type {PollBlock} from './poll-block';
 export type {
   PaywallBlock,
   PaywallBlockCta,
@@ -95,6 +97,7 @@ export type ContentBlock =
   | ImageBlock
   | LinkBlock
   | PaywallBlock
+  | PollBlock
   | TextBlock
   | VideoBlock;
 
@@ -332,6 +335,16 @@ function renderPaywall(block: PaywallBlock, options: RenderOptions): string {
     result += `<p>${escapeHtml(block.text)}</p>`;
   }
   result += '</a>';
+  return result;
+}
+
+/** Converts {@link block} to HTML. */
+function renderPoll(block: PollBlock, options: RenderOptions): string {
+  let result = `<div class="${options.prefix}-block-poll">` + `<h2>${escapeHtml(block.question)}</h2><ul>`;
+  for (const answer of block.answers) {
+    result += `<li>${escapeHtml(answer.answer_text)}</li>`;
+  }
+  result += '</ul></div>';
   return result;
 }
 
@@ -756,6 +769,10 @@ export default function npf2html(
         blockResult = renderPaywall(block, renderOptions);
         break;
 
+      case 'poll':
+        blockResult = renderPoll(block, renderOptions);
+        break;
+
       case 'video':
         blockResult = renderVideo(block, renderOptions);
         break;
@@ -767,6 +784,11 @@ export default function npf2html(
           blockResult = renderTextNoIndent(block, renderOptions);
         }
         break;
+
+      default:
+        blockResult =
+          '<p color="font-weight: bold; color: red">Unknown block type ' +
+          `"${escapeHtml((block as {type: string}).type)}"!</p>`;
     }
 
     const group = layoutGroups[0];
