@@ -479,10 +479,7 @@ function renderInlineFormat(
     case 'italic':
       return `<em>${html}</em>`;
     case 'strikethrough':
-      return (
-        `<span class="${options.prefix}-inline-strikethrough">${html}` +
-        '</span>'
-      );
+      return `<s>${html}</s>`;
     case 'small':
       return `<small>${html}</small>`;
     case 'link':

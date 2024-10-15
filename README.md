@@ -187,10 +187,7 @@ Text blocks are rendered either as `<h1>`s, `<h2>`s, `<blockquote>`s, `<ul>`s,
 
 Text blocks also support the following inline formatting:
 
-* Plain `<strong>`, `<em>`, `<small>`, and `<a>` tags.
-
-* `<span class="npf-inline-strikethrough">` tags, which indicate struck-through
-  text.
+* Plain `<strong>`, `<em>`, `<small>`, `<s>`, and `<a>` tags.
 
 * `<a class="npf-inline-mention">` tags, which indicate mentions of other blogs.
 
