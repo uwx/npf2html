@@ -1,3 +1,6 @@
+import {escapeHtml} from './utils';
+import {RenderOptions} from './options';
+
 /**
  * An NPF media object.
  *
@@ -44,4 +47,26 @@ export interface VisualMedia extends Media {
    * original media
    */
   has_original_dimensions?: boolean;
+}
+
+/** Converts {@link media} to HTML. */
+export function renderImageMedia(
+  media: VisualMedia[],
+  options: RenderOptions & {alt?: string}
+): string {
+  let result = `<img src="${escapeHtml(media[0].url)}"`;
+
+  if (media.length > 1) {
+    const minWidth = Math.min(...media.map(image => image.width));
+
+    const srcset = [];
+    for (const image of media) {
+      srcset.push(`${image.url} ${image.width / minWidth}x`);
+    }
+    result += ` srcset="${escapeHtml(srcset.join(','))}"`;
+  }
+
+  if (options.alt) result += ` alt="${escapeHtml(options.alt)}"`;
+  result += '>';
+  return result;
 }

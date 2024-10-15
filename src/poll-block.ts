@@ -1,3 +1,6 @@
+import {RenderOptions} from './options';
+import {escapeHtml} from './utils';
+
 /**
  * An NPF poll type content block.
  *
@@ -55,4 +58,16 @@ export interface PollSettings {
 
   /** The name of the app that created the poll. Usually "tumblr". */
   source: string;
+}
+
+/** Converts {@link block} to HTML. */
+export function renderPoll(block: PollBlock, options: RenderOptions): string {
+  let result =
+    `<div class="${options.prefix}-block-poll">` +
+    `<h2>${escapeHtml(block.question)}</h2><ul>`;
+  for (const answer of block.answers) {
+    result += `<li>${escapeHtml(answer.answer_text)}</li>`;
+  }
+  result += '</ul></div>';
+  return result;
 }

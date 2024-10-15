@@ -1,3 +1,5 @@
+import {RenderOptions} from './options';
+
 /**
  * Content blocks organized in rows, with variable elements per row.
  *
@@ -24,4 +26,28 @@ export interface RowsDisplay {
    * @see https://www.tumblr.com/docs/npf#layout-block-display-mode-carousel
    */
   mode?: {type: 'carousel'};
+}
+
+/** Wraps {@link html} as single row. */
+export function renderRowLayout(
+  display: RowsDisplay,
+  html: string,
+  options: RenderOptions
+): string {
+  const classes = [`${options.prefix}-layout-row`];
+  if (display?.mode?.type) {
+    classes.push(`${options.prefix}-layout-row-${display?.mode?.type}`);
+  }
+  return `<div class="${classes.join(' ')}">${html}</div>`;
+}
+
+/** Renders {@link html} as a "below the fold" read more. */
+export function renderTruncateLayout(
+  html: string,
+  options: RenderOptions
+): string {
+  return (
+    `<details class="${options.prefix}-layout-truncate">` +
+    `<summary>Keep reading</summary>${html}</details>`
+  );
 }

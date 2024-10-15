@@ -1,4 +1,5 @@
-import {BlogInfo} from './blog-info';
+import {InlineFormat, formatText} from './inline-format';
+import {RenderOptions} from './options';
 
 /**
  * An NPF text type content block.
@@ -55,67 +56,57 @@ export interface TextBlockIndented extends TextBlockBase {
   indent_level?: number;
 }
 
-/**
- * A single piece of inline formatting for a {@link TextBlock}.
- *
- * @see https://www.tumblr.com/docs/npf#inline-formatting-within-a-text-block
- */
-export type InlineFormat =
-  | InlineFormatBasic
-  | InlineFormatLink
-  | InlineFormatMention
-  | InlineFormatColor;
-
-/** The base interface for all types of inline formatting. */
-interface InlineFormatBase {
-  /** The starting index of the formatting range (inclusive). */
-  start: number;
-
-  /** The ending index of the formatting range (inclusive). */
-  end: number;
+/** Converts {@link block} to HTML. */
+export function renderTextNoIndent(
+  block: TextBlockNoIndent,
+  options: RenderOptions
+): string {
+  const text = formatText(block, options);
+  switch (block.subtype) {
+    case 'heading1':
+      return `<h1>${text}</h1>`;
+    case 'heading2':
+      return `<h2>${text}</h2>`;
+    case 'quirky':
+      return `<p class="${options.prefix}-block-text-quirky">${text}</p>`;
+    case 'quote':
+      return `<p class="${options.prefix}-block-text-quote">${text}</p>`;
+    case 'chat':
+      return `<p class="${options.prefix}-block-text-chat">${text}</p>`;
+    default:
+      return `<p>${text}</p>`;
+  }
 }
 
 /**
- * Basic inline formatting types that require no additional information.
+ * Converts {@link blocksAndNested} to HTML.
  *
- * @see https://www.tumblr.com/docs/npf#inline-format-types-bold-italic-strikethrough-small
+ * The first element of {@link blocksAndNested} determined the subtype of the
+ * entire thing; any other blocks are guaranteed to have the same subtype. The
+ * string elements of {@link blocksAndNested} ar {@link TextBlockIndented}
+ * objects which are more deeply nested and have already been converted to HTML.
  */
-export interface InlineFormatBasic extends InlineFormatBase {
-  type: 'bold' | 'italic' | 'strikethrough' | 'small';
-}
+export function renderTextIndented(
+  blocksAndNested: [TextBlockIndented, ...Array<TextBlockIndented | string>],
+  options: RenderOptions
+): string {
+  const {subtype} = blocksAndNested[0];
+  let contents = {
+    indented: '<blockquote>',
+    'ordered-list-item': '<ol>',
+    'unordered-list-item': '<ul>',
+  }[subtype];
 
-/**
- * An inline link.
- *
- * @see https://www.tumblr.com/docs/npf#inline-format-type-link
- */
-export interface InlineFormatLink extends InlineFormatBase {
-  type: 'link';
-
-  /** The link's URL. */
-  url: string;
-}
-
-/**
- * A mention of another blog.
- *
- * @see https://www.tumblr.com/docs/npf#inline-format-type-mention
- */
-export interface InlineFormatMention extends InlineFormatBase {
-  type: 'mention';
-
-  /** The mentioned blog. */
-  blog: BlogInfo;
-}
-
-/**
- * Colored text.
- *
- * @see https://www.tumblr.com/docs/npf#inline-format-type-color
- */
-export interface InlineFormatColor extends InlineFormatBase {
-  type: 'color';
-
-  /** The color to use, in standard hex format, with leading #. */
-  hex: string;
+  for (const element of blocksAndNested) {
+    const string = typeof element === 'string';
+    contents += subtype === 'indented' ? (string ? '' : '<p>') : '<li>';
+    contents += string ? element : formatText(element, options);
+    contents += subtype === 'indented' ? (string ? '' : '</p>') : '</li>';
+  }
+  contents += {
+    indented: '</blockquote>',
+    'ordered-list-item': '</ol>',
+    'unordered-list-item': '</ul>',
+  }[subtype];
+  return contents;
 }

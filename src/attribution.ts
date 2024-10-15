@@ -1,5 +1,7 @@
 import {BlogInfo} from './blog-info';
-import {VisualMedia} from './media';
+import {VisualMedia, renderImageMedia} from './media';
+import {RenderOptions} from './options';
+import {escapeHtml} from './utils';
 
 /** Attribution indicating where a content or layout block came from. */
 export type Attribution =
@@ -77,4 +79,40 @@ export interface AppAttribution {
    * attribution.
    */
   logo?: VisualMedia;
+}
+
+/** Converts {@link attribution} to HTML. */
+export function renderAttribution(
+  attribution: Attribution,
+  options: RenderOptions
+): string {
+  const href =
+    attribution.type === 'blog' ? attribution.blog.url : attribution.url;
+  let result =
+    `<a class="${options.prefix}-attribution` +
+    ` ${options.prefix}-attribution-${attribution.type}"` +
+    ` href="${escapeHtml(href)}">`;
+
+  switch (attribution.type) {
+    case 'post':
+    case 'blog':
+      result += escapeHtml(attribution.blog.name);
+      break;
+
+    case 'link':
+      result += escapeHtml(attribution.url);
+      break;
+
+    case 'app': {
+      const display = attribution.display_text || attribution.app_name;
+      if (display) result += escapeHtml(display);
+      if (attribution.logo) {
+        result += renderImageMedia([attribution.logo], options);
+      } else if (!display) {
+        result += escapeHtml(attribution.url);
+      }
+    }
+  }
+
+  return result + '</a>';
 }

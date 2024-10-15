@@ -1,3 +1,6 @@
+import {RenderOptions} from './options';
+import {escapeHtml} from './utils';
+
 /**
  * An NPF paywall type content block.
  *
@@ -39,4 +42,29 @@ export interface PaywallBlockDivider extends PaywallBlockBase {
 
   /** The hex color for the label and divider, e.g. `#eeeeee`. */
   color?: string;
+}
+
+/** Converts {@link block} to HTML. */
+export function renderPaywall(
+  block: PaywallBlock,
+  options: RenderOptions
+): string {
+  if (block.is_visible === false) return '';
+
+  let result =
+    `<a class="${options.prefix}-block-paywall ` +
+    `${options.prefix}-block-paywall-${block.subtype}"` +
+    ` href="${escapeHtml(block.url)}"`;
+  if (block.subtype === 'divider' && block.color) {
+    result += ` style="--${options.prefix}-paywall-color: ${block.color}"`;
+  }
+  result += '>';
+  if (block.subtype !== 'divider' && block.title) {
+    result += `<h2>${escapeHtml(block.title)}</h2>`;
+  }
+  if (block.text) {
+    result += `<p>${escapeHtml(block.text)}</p>`;
+  }
+  result += '</a>';
+  return result;
 }

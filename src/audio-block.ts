@@ -1,5 +1,7 @@
-import type {Attribution} from './attribution';
-import type {Media, VisualMedia} from './media';
+import {Attribution, renderAttribution} from './attribution';
+import {Media, VisualMedia, renderImageMedia} from './media';
+import {RenderOptions} from './options';
+import {escapeHtml} from './utils';
 
 /**
  * An NPF audio type content block.
@@ -53,4 +55,68 @@ export interface AudioBlock {
 
   /** Optional attribution information about where the audio track came from. */
   attribution?: Attribution;
+}
+
+/** Converts {@link block} to HTML. */
+export function renderAudio(block: AudioBlock, options: RenderOptions): string {
+  let result = `<figure class="${options.prefix}-block-audio">`;
+  if (block.media || !(block.embed_html || block.embed_url)) {
+    const hasText = block.title || block.artist || block.album;
+    const hasCaption = block.poster || block.attribution || hasText;
+    if (block.media) {
+      result += `<audio controls src="${escapeHtml(block.media[0].url)}"></audio>`;
+      if (hasCaption) result += '<figcaption>';
+    } else {
+      result += `<a href="${escapeHtml(block.url!)}">`;
+    }
+
+    if (block.poster) {
+      result += renderImageMedia(block.poster, options);
+    }
+    if (block.title) {
+      result +=
+        `<span class="${options.prefix}-block-audio-title">` +
+        escapeHtml(block.title) +
+        '</span>';
+    }
+    if (block.artist) {
+      if (block.title) result += ' - ';
+      result +=
+        `<span class="${options.prefix}-block-audio-artist">` +
+        escapeHtml(block.artist) +
+        '</span>';
+    }
+    if (block.album) {
+      if (block.title || block.artist) result += ' on ';
+      result +=
+        `<span class="${options.prefix}-block-audio-album">` +
+        escapeHtml(block.album) +
+        '</span>';
+    }
+    if (!block.media) {
+      if (!hasText) result += escapeHtml(block.url!);
+      result += '</a>';
+    }
+
+    if (block.attribution) {
+      if (!block.media) result += '<figcaption>';
+      result += renderAttribution(block.attribution, options);
+      if (!block.media) result += '</figcaption>';
+    }
+
+    if (block.media && hasCaption) result += '</figcaption>';
+  } else {
+    result += block.embed_html
+      ? block.embed_html
+      : `<iframe src="${escapeHtml(block.embed_url!)}"></iframe>`;
+
+    if (block.attribution) {
+      result +=
+        '<figcaption>' +
+        renderAttribution(block.attribution, options) +
+        '</figcaption>';
+    }
+  }
+  result += '</figure>';
+  return result;
 }
