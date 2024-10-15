@@ -1,7 +1,6 @@
-import {Attribution, renderAttribution} from './attribution';
-import {VisualMedia, renderImageMedia} from './media';
-import {RenderOptions} from './options';
-import {escapeHtml} from './utils';
+import {Attribution} from './attribution';
+import {VisualMedia} from './media';
+import {Renderer} from './renderer';
 
 /**
  * An NPF image type content block.
@@ -41,20 +40,20 @@ export interface ImageBlock {
 }
 
 /** Converts {@link block} to HTML. */
-export function renderImage(block: ImageBlock, options: RenderOptions): string {
+export function renderImage(renderer: Renderer, block: ImageBlock): string {
   let result =
-    `<figure class="${options.prefix}-block-image">` +
-    renderImageMedia(block.media, {...options, alt: block.alt_text});
+    `<figure class="${renderer.prefix}-block-image">` +
+    renderer.renderImageMedia(block.media, {alt: block.alt_text});
   if (block.caption || block.attribution) {
     result += '<figcaption>';
     if (block.caption) {
       result +=
-        '<span class="${options.prefix}-block-image-caption">' +
-        escapeHtml(block.caption) +
+        `<span class="${renderer.prefix}-block-image-caption">` +
+        renderer.escape(block.caption) +
         '</span>';
     }
     if (block.attribution)
-      result += renderAttribution(block.attribution, options);
+      result += renderer.renderAttribution(block.attribution);
     result += '</figcaption>';
   }
   result += '</figure>';

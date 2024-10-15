@@ -1,7 +1,6 @@
-import {Attribution, renderAttribution} from './attribution';
+import {Attribution} from './attribution';
 import {VisualMedia} from './media';
-import {RenderOptions} from './options';
-import {escapeHtml} from './utils';
+import {Renderer} from './renderer';
 
 /**
  * An NPF video type content block.
@@ -74,14 +73,15 @@ export interface IFrame {
 }
 
 /** Converts {@link block} to HTML. */
-export function renderVideo(block: VideoBlock, options: RenderOptions): string {
-  let result = `<figure class="${options.prefix}-block-video">`;
+export function renderVideo(renderer: Renderer, block: VideoBlock): string {
+  let result = `<figure class="${renderer.prefix}-block-video">`;
   if (block.media) {
-    result += '<video src="' + escapeHtml(block.media?.url ?? block.url!) + '"';
+    result +=
+      '<video src="' + renderer.escape(block.media?.url ?? block.url!) + '"';
     if (block.poster) {
       result +=
         ' poster="' +
-        escapeHtml(
+        renderer.escape(
           block.poster.reduce((biggest, current) =>
             biggest && biggest.width > current.width ? biggest : current
           ).url
@@ -93,20 +93,22 @@ export function renderVideo(block: VideoBlock, options: RenderOptions): string {
     result += block.embed_html;
   } else if (block.embed_iframe) {
     result +=
-      `<iframe src="${escapeHtml(block.embed_iframe.url)}"` +
+      `<iframe src="${renderer.escape(block.embed_iframe.url)}"` +
       ` width="${block.embed_iframe.width}"` +
       ` height="${block.embed_iframe.height}"></iframe>`;
   } else if (block.embed_url) {
-    result += `<iframe src="${escapeHtml(block.embed_url)}"></iframe>`;
+    result += `<iframe src="${renderer.escape(block.embed_url)}"></iframe>`;
   } else {
     result +=
-      `<a href="${escapeHtml(block.url!)}">` + escapeHtml(block.url!) + '</a>';
+      `<a href="${renderer.escape(block.url!)}">` +
+      renderer.escape(block.url!) +
+      '</a>';
   }
 
   if (block.attribution) {
     result +=
       '<figcaption>' +
-      renderAttribution(block.attribution, options) +
+      renderer.renderAttribution(block.attribution) +
       '</figcaption>';
   }
   result += '</figure>';

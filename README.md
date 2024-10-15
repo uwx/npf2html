@@ -65,6 +65,11 @@ is fine, to this should be passed directly from the Tumblr API's
 
 [NPF layouts]: https://www.tumblr.com/docs/npf#layout-blocks
 
+#### `renderer`
+
+A custom subclass of the `Renderer` class which allows callers to override
+how individual components are rendered.
+
 ## Output
 
 This package's goal is *not* to produce the same HTML as the Tumblr website
@@ -332,7 +337,3 @@ A truncation, also known as a "read more", looks like:
   ... <!-- content blocks -->
 </details>
 ```
-
-## TODO
-
-* Allow callers to override specific renderings

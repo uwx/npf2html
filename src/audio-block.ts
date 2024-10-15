@@ -1,7 +1,6 @@
-import {Attribution, renderAttribution} from './attribution';
-import {Media, VisualMedia, renderImageMedia} from './media';
-import {RenderOptions} from './options';
-import {escapeHtml} from './utils';
+import {Attribution} from './attribution';
+import {Media, VisualMedia} from './media';
+import {Renderer} from './renderer';
 
 /**
  * An NPF audio type content block.
@@ -58,49 +57,51 @@ export interface AudioBlock {
 }
 
 /** Converts {@link block} to HTML. */
-export function renderAudio(block: AudioBlock, options: RenderOptions): string {
-  let result = `<figure class="${options.prefix}-block-audio">`;
+export function renderAudio(renderer: Renderer, block: AudioBlock): string {
+  let result = `<figure class="${renderer.prefix}-block-audio">`;
   if (block.media || !(block.embed_html || block.embed_url)) {
     const hasText = block.title || block.artist || block.album;
     const hasCaption = block.poster || block.attribution || hasText;
     if (block.media) {
-      result += `<audio controls src="${escapeHtml(block.media[0].url)}"></audio>`;
+      result +=
+        `<audio controls src="${renderer.escape(block.media[0].url)}">` +
+        '</audio>';
       if (hasCaption) result += '<figcaption>';
     } else {
-      result += `<a href="${escapeHtml(block.url!)}">`;
+      result += `<a href="${renderer.escape(block.url!)}">`;
     }
 
     if (block.poster) {
-      result += renderImageMedia(block.poster, options);
+      result += renderer.renderImageMedia(block.poster);
     }
     if (block.title) {
       result +=
-        `<span class="${options.prefix}-block-audio-title">` +
-        escapeHtml(block.title) +
+        `<span class="${renderer.prefix}-block-audio-title">` +
+        renderer.escape(block.title) +
         '</span>';
     }
     if (block.artist) {
       if (block.title) result += ' - ';
       result +=
-        `<span class="${options.prefix}-block-audio-artist">` +
-        escapeHtml(block.artist) +
+        `<span class="${renderer.prefix}-block-audio-artist">` +
+        renderer.escape(block.artist) +
         '</span>';
     }
     if (block.album) {
       if (block.title || block.artist) result += ' on ';
       result +=
-        `<span class="${options.prefix}-block-audio-album">` +
-        escapeHtml(block.album) +
+        `<span class="${renderer.prefix}-block-audio-album">` +
+        renderer.escape(block.album) +
         '</span>';
     }
     if (!block.media) {
-      if (!hasText) result += escapeHtml(block.url!);
+      if (!hasText) result += renderer.escape(block.url!);
       result += '</a>';
     }
 
     if (block.attribution) {
       if (!block.media) result += '<figcaption>';
-      result += renderAttribution(block.attribution, options);
+      result += renderer.renderAttribution(block.attribution);
       if (!block.media) result += '</figcaption>';
     }
 
@@ -108,12 +109,12 @@ export function renderAudio(block: AudioBlock, options: RenderOptions): string {
   } else {
     result += block.embed_html
       ? block.embed_html
-      : `<iframe src="${escapeHtml(block.embed_url!)}"></iframe>`;
+      : `<iframe src="${renderer.escape(block.embed_url!)}"></iframe>`;
 
     if (block.attribution) {
       result +=
         '<figcaption>' +
-        renderAttribution(block.attribution, options) +
+        renderer.renderAttribution(block.attribution) +
         '</figcaption>';
     }
   }

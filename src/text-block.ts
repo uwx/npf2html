@@ -1,5 +1,5 @@
-import {InlineFormat, formatText} from './inline-format';
-import {RenderOptions} from './options';
+import {InlineFormat} from './inline-format';
+import {Renderer} from './renderer';
 
 /**
  * An NPF text type content block.
@@ -58,21 +58,21 @@ export interface TextBlockIndented extends TextBlockBase {
 
 /** Converts {@link block} to HTML. */
 export function renderTextNoIndent(
-  block: TextBlockNoIndent,
-  options: RenderOptions
+  renderer: Renderer,
+  block: TextBlockNoIndent
 ): string {
-  const text = formatText(block, options);
+  const text = renderer.formatText(block.text, block.formatting);
   switch (block.subtype) {
     case 'heading1':
       return `<h1>${text}</h1>`;
     case 'heading2':
       return `<h2>${text}</h2>`;
     case 'quirky':
-      return `<p class="${options.prefix}-block-text-quirky">${text}</p>`;
+      return `<p class="${renderer.prefix}-block-text-quirky">${text}</p>`;
     case 'quote':
-      return `<p class="${options.prefix}-block-text-quote">${text}</p>`;
+      return `<p class="${renderer.prefix}-block-text-quote">${text}</p>`;
     case 'chat':
-      return `<p class="${options.prefix}-block-text-chat">${text}</p>`;
+      return `<p class="${renderer.prefix}-block-text-chat">${text}</p>`;
     default:
       return `<p>${text}</p>`;
   }
@@ -81,14 +81,14 @@ export function renderTextNoIndent(
 /**
  * Converts {@link blocksAndNested} to HTML.
  *
- * The first element of {@link blocksAndNested} determined the subtype of the
+ * The first element of {@link blocksAndNested} determines the subtype of the
  * entire thing; any other blocks are guaranteed to have the same subtype. The
  * string elements of {@link blocksAndNested} ar {@link TextBlockIndented}
  * objects which are more deeply nested and have already been converted to HTML.
  */
 export function renderTextIndented(
-  blocksAndNested: [TextBlockIndented, ...Array<TextBlockIndented | string>],
-  options: RenderOptions
+  renderer: Renderer,
+  blocksAndNested: [TextBlockIndented, ...Array<TextBlockIndented | string>]
 ): string {
   const {subtype} = blocksAndNested[0];
   let contents = {
@@ -100,7 +100,9 @@ export function renderTextIndented(
   for (const element of blocksAndNested) {
     const string = typeof element === 'string';
     contents += subtype === 'indented' ? (string ? '' : '<p>') : '<li>';
-    contents += string ? element : formatText(element, options);
+    contents += string
+      ? element
+      : renderer.formatText(element.text, element.formatting);
     contents += subtype === 'indented' ? (string ? '' : '</p>') : '</li>';
   }
   contents += {

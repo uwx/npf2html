@@ -1,25 +1,14 @@
-import {AskLayout, renderAskLayout} from './ask-layout';
-import {AudioBlock, renderAudio} from './audio-block';
-import {ImageBlock, renderImage} from './image-block';
-import {LinkBlock, renderLink} from './link-block';
-import {VisualMedia} from './media';
-import {Options, RenderOptions} from './options';
-import {PaywallBlock, renderPaywall} from './paywall-block';
-import {PollBlock, renderPoll} from './poll-block';
-import {
-  RowsDisplay,
-  RowsLayout,
-  renderRowLayout,
-  renderTruncateLayout,
-} from './rows-layout';
-import {
-  TextBlock,
-  TextBlockIndented,
-  renderTextNoIndent,
-  renderTextIndented,
-} from './text-block';
-import {escapeHtml} from './utils';
-import {VideoBlock, renderVideo} from './video-block';
+import {AskLayout} from './ask-layout';
+import {AudioBlock} from './audio-block';
+import {ImageBlock} from './image-block';
+import {LinkBlock} from './link-block';
+import {Options} from './options';
+import {PaywallBlock} from './paywall-block';
+import {PollBlock} from './poll-block';
+import {Renderer} from './renderer';
+import {RowsDisplay, RowsLayout} from './rows-layout';
+import {TextBlock, TextBlockIndented} from './text-block';
+import {VideoBlock} from './video-block';
 
 export {AskLayout} from './ask-layout';
 export {
@@ -40,6 +29,7 @@ export {
   PaywallBlockCta,
   PaywallBlockDivider,
 } from './paywall-block';
+export {Renderer} from './renderer';
 export {RowsDisplay, RowsLayout} from './rows-layout';
 export {TextBlock, TextBlockNoIndent, TextBlockIndented} from './text-block';
 export {
@@ -65,6 +55,12 @@ export type ContentBlock =
   | TextBlock
   | VideoBlock;
 
+/** A block of unknown type, not documented as part of the Tumblr API. */
+export interface UnknownBlock extends Record<string, unknown> {
+  /** The type of the block. */
+  type: string;
+}
+
 /**
  * A layout indicating how to lay out contents blocks.
  *
@@ -86,30 +82,6 @@ interface LayoutGroup {
   /** The exclusive block index before which the group ends. */
   end: number;
 }
-
-/** The media for the default avatar to use for asks if none is provided. */
-const anonymousAvatar: VisualMedia[] = [
-  {
-    width: 128,
-    height: 128,
-    url: 'https://assets.tumblr.com/images/anonymous_avatar_128.gif',
-  },
-  {
-    width: 96,
-    height: 96,
-    url: 'https://assets.tumblr.com/images/anonymous_avatar_96.gif',
-  },
-  {
-    width: 64,
-    height: 64,
-    url: 'https://assets.tumblr.com/images/anonymous_avatar_64.gif',
-  },
-  {
-    width: 48,
-    height: 48,
-    url: 'https://assets.tumblr.com/images/anonymous_avatar_48.gif',
-  },
-];
 
 /** Returns whether {@link block} is a {@link TextBlockIndented}. */
 function isTextBlockIndented(block: ContentBlock): block is TextBlockIndented {
@@ -158,10 +130,7 @@ export default function npf2html(
   blocks: ContentBlock[],
   options?: Options
 ): string {
-  const renderOptions: RenderOptions = {
-    prefix: options?.prefix ?? 'npf',
-    askingAvatar: options?.askingAvatar ?? anonymousAvatar,
-  };
+  const renderer = options?.renderer ?? new Renderer(options);
   let result = '';
 
   const truncateAfter = options?.layout?.find(
@@ -200,48 +169,47 @@ export default function npf2html(
         }
       }
 
-      return renderTextIndented(blocksAndNested, renderOptions);
+      return renderer.renderTextIndented(blocksAndNested);
     };
 
     let blockResult: string;
     const block = blocks[i];
     switch (block.type) {
       case 'audio':
-        blockResult = renderAudio(block, renderOptions);
+        blockResult = renderer.renderAudio(block);
         break;
 
       case 'image':
-        blockResult = renderImage(block, renderOptions);
+        blockResult = renderer.renderImage(block);
         break;
 
       case 'link':
-        blockResult = renderLink(block, renderOptions);
+        blockResult = renderer.renderLink(block);
         break;
 
       case 'paywall':
-        blockResult = renderPaywall(block, renderOptions);
+        blockResult = renderer.renderPaywall(block);
         break;
 
       case 'poll':
-        blockResult = renderPoll(block, renderOptions);
+        blockResult = renderer.renderPoll(block);
         break;
 
       case 'video':
-        blockResult = renderVideo(block, renderOptions);
+        blockResult = renderer.renderVideo(block);
         break;
 
       case 'text':
         if (isTextBlockIndented(block)) {
           blockResult = collectAndRenderIndented();
         } else {
-          blockResult = renderTextNoIndent(block, renderOptions);
+          blockResult = renderer.renderTextNoIndent(block);
         }
         break;
 
       default:
-        blockResult =
-          '<p color="font-weight: bold; color: red">Unknown block type ' +
-          `"${escapeHtml((block as {type: string}).type)}"!</p>`;
+        blockResult = renderer.renderUnknown(block as UnknownBlock);
+        break;
     }
 
     const group = layoutGroups[0];
@@ -251,9 +219,9 @@ export default function npf2html(
       if (i + 1 === group.end) {
         layoutGroups.shift();
         if ('type' in group.layout) {
-          result += renderAskLayout(group.layout, currentGroup, renderOptions);
+          result += renderer.renderAskLayout(group.layout, currentGroup);
         } else {
-          result += renderRowLayout(group.layout, currentGroup, renderOptions);
+          result += renderer.renderRowLayout(group.layout, currentGroup);
         }
         currentGroup = '';
       }
@@ -269,7 +237,7 @@ export default function npf2html(
   if (truncateIndex !== undefined) {
     result =
       result.substring(0, truncateIndex) +
-      renderTruncateLayout(result.substring(truncateIndex), renderOptions);
+      renderer.renderTruncateLayout(result.substring(truncateIndex));
   }
 
   return result;

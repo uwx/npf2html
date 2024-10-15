@@ -1,7 +1,6 @@
 import {BlogInfo} from './blog-info';
-import {VisualMedia, renderImageMedia} from './media';
-import {RenderOptions} from './options';
-import {escapeHtml} from './utils';
+import {VisualMedia} from './media';
+import {Renderer} from './renderer';
 
 /** Attribution indicating where a content or layout block came from. */
 export type Attribution =
@@ -83,33 +82,33 @@ export interface AppAttribution {
 
 /** Converts {@link attribution} to HTML. */
 export function renderAttribution(
-  attribution: Attribution,
-  options: RenderOptions
+  renderer: Renderer,
+  attribution: Attribution
 ): string {
   const href =
     attribution.type === 'blog' ? attribution.blog.url : attribution.url;
   let result =
-    `<a class="${options.prefix}-attribution` +
-    ` ${options.prefix}-attribution-${attribution.type}"` +
-    ` href="${escapeHtml(href)}">`;
+    `<a class="${renderer.prefix}-attribution` +
+    ` ${renderer.prefix}-attribution-${attribution.type}"` +
+    ` href="${renderer.escape(href)}">`;
 
   switch (attribution.type) {
     case 'post':
     case 'blog':
-      result += escapeHtml(attribution.blog.name);
+      result += renderer.escape(attribution.blog.name);
       break;
 
     case 'link':
-      result += escapeHtml(attribution.url);
+      result += renderer.escape(attribution.url);
       break;
 
     case 'app': {
       const display = attribution.display_text || attribution.app_name;
-      if (display) result += escapeHtml(display);
+      if (display) result += renderer.escape(display);
       if (attribution.logo) {
-        result += renderImageMedia([attribution.logo], options);
+        result += renderer.renderImageMedia([attribution.logo]);
       } else if (!display) {
-        result += escapeHtml(attribution.url);
+        result += renderer.escape(attribution.url);
       }
     }
   }

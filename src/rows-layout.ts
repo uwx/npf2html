@@ -1,4 +1,4 @@
-import {RenderOptions} from './options';
+import {Renderer} from './renderer';
 
 /**
  * Content blocks organized in rows, with variable elements per row.
@@ -30,24 +30,21 @@ export interface RowsDisplay {
 
 /** Wraps {@link html} as single row. */
 export function renderRowLayout(
+  renderer: Renderer,
   display: RowsDisplay,
-  html: string,
-  options: RenderOptions
+  html: string
 ): string {
-  const classes = [`${options.prefix}-layout-row`];
+  const classes = [`${renderer.prefix}-layout-row`];
   if (display?.mode?.type) {
-    classes.push(`${options.prefix}-layout-row-${display?.mode?.type}`);
+    classes.push(`${renderer.prefix}-layout-row-${display?.mode?.type}`);
   }
   return `<div class="${classes.join(' ')}">${html}</div>`;
 }
 
 /** Renders {@link html} as a "below the fold" read more. */
-export function renderTruncateLayout(
-  html: string,
-  options: RenderOptions
-): string {
+export function renderTruncateLayout(renderer: Renderer, html: string): string {
   return (
-    `<details class="${options.prefix}-layout-truncate">` +
+    `<details class="${renderer.prefix}-layout-truncate">` +
     `<summary>Keep reading</summary>${html}</details>`
   );
 }

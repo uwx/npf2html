@@ -1,7 +1,5 @@
 import {BlogInfo} from './blog-info';
-import {RenderOptions} from './options';
-import {TextBlock} from './text-block';
-import {escapeHtml} from './utils';
+import {Renderer} from './renderer';
 
 /**
  * A single piece of inline formatting for a {@link TextBlock}.
@@ -99,11 +97,11 @@ interface InlineFormatSpan {
 }
 
 /** Builds the list of {@link InlineFormatSpan}s for {@link block}. */
-function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
+function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
   // Sort formats first by start (earliest to latest), then by length (longest
   // to shortest). This ensures that earlier formats are never nested within
   // later ones.
-  const formats = [...block.formatting!].sort((a, b) =>
+  const formats = [...formatting].sort((a, b) =>
     a.start === b.start ? b.end - a.end : a.start - b.start
   );
 
@@ -111,11 +109,12 @@ function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
   // well.
   const open: Array<Omit<InlineFormatSpan, 'end'>> = [];
 
-  // The fully-closed spans of `block.text`.
+  // The fully-closed spans of formatted text.
   const spans: InlineFormatSpan[] = [];
 
   let codePointIndex = 0;
-  for (let i = 0; i < block.text.length; i++) {
+  const end = Math.max(...formats.map(format => format.end));
+  for (let i = 0; i < end; i++) {
     while (codePointIndex === formats[0]?.start) {
       open.push({format: formats.shift()!, start: i, children: []});
     }
@@ -143,15 +142,12 @@ function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
       open.push(...stillOpen);
     }
 
-    // A character is a high surrogate exactly if it matches 0b110110XXXXXXXXXX.
-    // 0x36 == 0b110110.
-    if (block.text.charCodeAt(i) >> 10 === 0x36) i++;
     codePointIndex++;
   }
 
-  if (open.length > 0) spans.push({...open[0], end: block.text.length});
+  if (open.length > 0) spans.push({...open[0], end});
   for (let i = 1; i < open.length; i++) {
-    spans.at(-1)!.children.push({...open[i], end: block.text.length});
+    spans.at(-1)!.children.push({...open[i], end});
   }
 
   return spans;
@@ -161,10 +157,10 @@ function buildFormatSpans(block: TextBlock): InlineFormatSpan[] {
  * Applies the formatting specified by {@link format} to {@link html}, which may
  * already include nested formatting.
  */
-function renderInlineFormat(
+export function renderInlineFormat(
+  renderer: Renderer,
   html: string,
-  format: InlineFormat,
-  options: RenderOptions
+  format: InlineFormat
 ): string {
   switch (format.type) {
     case 'bold':
@@ -176,23 +172,28 @@ function renderInlineFormat(
     case 'small':
       return `<small>${html}</small>`;
     case 'link':
-      return `<a href="${escapeHtml(format.url)}">${html}</a>`;
+      return `<a href="${renderer.escape(format.url)}">${html}</a>`;
     case 'mention':
       return (
-        `<a class="${options.prefix}-inline-mention"` +
-        ` href="${escapeHtml(format.blog.url)}">${html}</a>`
+        `<a class="${renderer.prefix}-inline-mention"` +
+        ` href="${renderer.escape(format.blog.url)}">${html}</a>`
       );
     case 'color':
-      return `<span style="color: ${escapeHtml(format.hex)}">${html}</span>`;
+      return (
+        `<span style="color: ${renderer.escape(format.hex)}">` +
+        html +
+        '</span>'
+      );
   }
 }
 
-/**
- * Formats the text contents of {@link block} according to {@link
- * TextblockBase.formatting}. Return HTML-safe text.
- */
-export function formatText(block: TextBlock, options: RenderOptions): string {
-  if (!block.formatting) return escapeHtml(block.text);
+/** HTML-escapes {@link text} and formats it according to {@link formatting}. */
+export function formatText(
+  renderer: Renderer,
+  text: string,
+  formatting: InlineFormat[] | undefined
+): string {
+  if (!formatting) return renderer.escape(text);
 
   const renderSpans = (
     start: number,
@@ -203,17 +204,15 @@ export function formatText(block: TextBlock, options: RenderOptions): string {
     let i = start;
     for (const child of children) {
       result +=
-        escapeHtml(block.text.substring(i, child.start)) +
-        renderInlineFormat(
+        renderer.escape(text.substring(i, child.start)) +
+        renderer.renderInlineFormat(
           renderSpans(child.start, child.end, child.children),
-          child.format,
-          options
+          child.format
         );
       i = child.end;
     }
-    return result + escapeHtml(block.text.substring(i, end));
+    return result + renderer.escape(text.substring(i, end));
   };
 
-  const spans = buildFormatSpans(block);
-  return renderSpans(0, block.text.length, spans);
+  return renderSpans(0, text.length, buildFormatSpans(formatting));
 }

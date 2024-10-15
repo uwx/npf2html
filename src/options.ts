@@ -1,5 +1,6 @@
 import {VisualMedia} from './media';
 import {Layout} from './index';
+import {Renderer} from './renderer';
 
 /** Options for {@link npf2html}. */
 export interface Options {
@@ -26,18 +27,12 @@ export interface Options {
    * This is avialable from `post.asking_avatar` in the Tumblr API.
    */
   askingAvatar?: VisualMedia[];
-}
 
-/**
- * Options passed to each render method.
- *
- * This is a subset of {@link Options} with all options filled in by defaults if
- * they weren't originally defined.
- */
-export interface RenderOptions {
-  /** @see Options.prefix */
-  prefix: string;
-
-  /** @see Options.askingAvatar */
-  askingAvatar: VisualMedia[];
+  /**
+   * A custom {@link Renderer} to use to convert NPF components to HTML.
+   *
+   * If this is passed, {@link prefix} and {@link askingAvatar} are ignored in
+   * favor of the corresponding values in {@link renderer}.
+   */
+  renderer?: Renderer;
 }

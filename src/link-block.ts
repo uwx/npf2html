@@ -1,6 +1,5 @@
-import {VisualMedia, renderImageMedia} from './media';
-import {RenderOptions} from './options';
-import {escapeHtml} from './utils';
+import {VisualMedia} from './media';
+import {Renderer} from './renderer';
 
 /**
  * An NPF link type content block.
@@ -32,31 +31,31 @@ export interface LinkBlock {
 }
 
 /** Convets {@link block} to HTML. */
-export function renderLink(block: LinkBlock, options: RenderOptions): string {
+export function renderLink(renderer: Renderer, block: LinkBlock): string {
   let result =
-    `<a class="${options.prefix}-block-link"` +
-    ` href="${escapeHtml(block.url)}">`;
+    `<a class="${renderer.prefix}-block-link"` +
+    ` href="${renderer.escape(block.url)}">`;
   if (block.poster) {
-    result += renderImageMedia(block.poster, options);
+    result += renderer.renderImageMedia(block.poster);
   }
   result +=
     '<h2>' +
-    escapeHtml(block.title ?? block.display_url ?? block.url) +
+    renderer.escape(block.title ?? block.display_url ?? block.url) +
     '</h2>';
   if (block.site_name) {
     result +=
-      `<p class="${options.prefix}-block-link-site">` +
-      `${escapeHtml(block.site_name)}</p>`;
+      `<p class="${renderer.prefix}-block-link-site">` +
+      `${renderer.escape(block.site_name)}</p>`;
   }
   if (block.author) {
     result +=
-      `<p class="${options.prefix}-block-link-author">` +
-      `${escapeHtml(block.author)}</p>`;
+      `<p class="${renderer.prefix}-block-link-author">` +
+      `${renderer.escape(block.author)}</p>`;
   }
   if (block.description) {
     result +=
-      `<p class="${options.prefix}-block-link-description">` +
-      `${escapeHtml(block.description)}</p>`;
+      `<p class="${renderer.prefix}-block-link-description">` +
+      `${renderer.escape(block.description)}</p>`;
   }
   result += '</a>';
   return result;

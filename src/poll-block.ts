@@ -1,5 +1,4 @@
-import {RenderOptions} from './options';
-import {escapeHtml} from './utils';
+import {Renderer} from './renderer';
 
 /**
  * An NPF poll type content block.
@@ -61,12 +60,12 @@ export interface PollSettings {
 }
 
 /** Converts {@link block} to HTML. */
-export function renderPoll(block: PollBlock, options: RenderOptions): string {
+export function renderPoll(renderer: Renderer, block: PollBlock): string {
   let result =
-    `<div class="${options.prefix}-block-poll">` +
-    `<h2>${escapeHtml(block.question)}</h2><ul>`;
+    `<div class="${renderer.prefix}-block-poll">` +
+    `<h2>${renderer.escape(block.question)}</h2><ul>`;
   for (const answer of block.answers) {
-    result += `<li>${escapeHtml(answer.answer_text)}</li>`;
+    result += `<li>${renderer.escape(answer.answer_text)}</li>`;
   }
   result += '</ul></div>';
   return result;
