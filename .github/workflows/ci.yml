@@ -1,0 +1,30 @@
+name: CI
+
+defaults:
+  run: {shell: bash}
+
+on:
+  push:
+    branches: [main]
+    tags: ['**']
+  pull_request:
+
+jobs:
+  test:
+    name: 'Tests | Node ${{ matrix.node-version }}'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: ['lts/*', 'lts/-1', 'lts/-2']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          check-latest: true
+
+      - run: npm install
+      - run: npm test
