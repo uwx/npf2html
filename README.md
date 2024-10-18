@@ -109,7 +109,9 @@ Image blocks look like:
 
 ```html
 <figure class="npf-block-image">
-  <img src="...">
+  <a href="...">
+    <img src="...">
+  </a>
   <figcaption>
     <span class="npf-block-image-caption">...</span>
     <a class="npf-attribution" href="...">blogname</a>

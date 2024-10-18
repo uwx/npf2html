@@ -47,9 +47,14 @@ export interface ImageBlock {
  * @category Content
  */
 export function renderImage(renderer: Renderer, block: ImageBlock): string {
+  const highestResImage = block.media.reduce((best, current) =>
+    best && best.width > current.width ? best : current
+  );
   let result =
     `<figure class="${renderer.prefix}-block-image">` +
-    renderer.renderImageMedia(block.media, {alt: block.alt_text});
+    `<a href="${renderer.escape(highestResImage.url)}">` +
+    renderer.renderImageMedia(block.media, {alt: block.alt_text}) +
+    '</a>';
   if (block.caption || block.attribution) {
     result += '<figcaption>';
     if (block.caption) {

@@ -1,3 +1,7 @@
+## 1.1.6
+
+* Generate links for image blocks.
+
 ## 1.1.5
 
 * Fix ESM support.
