@@ -54,18 +54,12 @@ export function renderImageMedia(
   media: VisualMedia[],
   options?: {alt?: string}
 ): string {
-  let result = `<img src="${renderer.escape(media[0].url)}"`;
+  let result = '<img';
 
-  if (media.length > 1) {
-    const minWidth = Math.min(...media.map(image => image.width));
-
-    const srcset = [];
-    for (const image of media) {
-      srcset.push(`${image.url} ${image.width / minWidth}x`);
-    }
-    result += ` srcset="${renderer.escape(srcset.join(','))}"`;
-  }
-
+  const primary = media.reduce((best, current) =>
+    best && best.width > current.width ? best : current
+  );
+  result += ` src="${renderer.escape(primary.url)}"`;
   if (options?.alt) result += ` alt="${renderer.escape(options.alt)}"`;
   result += '>';
   return result;
