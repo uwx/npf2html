@@ -51,6 +51,10 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
+    permissions:
+      pages: write
+      id-token: write
+
     runs-on: ubuntu-latest
     if: "startsWith(github.ref, 'refs/tags/') && github.repository == 'nex3/npf2html'"
     needs: [deploy]
@@ -66,3 +70,4 @@ jobs:
       - run: npm run doc
       - id: deployment
         uses: actions/deploy-pages@v4
+        with: {path: doc}

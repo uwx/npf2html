@@ -1,3 +1,7 @@
+## 1.1.1
+
+* No user-visible changes.
+
 ## 1.1.0
 
 * Export `ImageBlock`, `LinkBlock`, `PollAnswer`, and `PollSettings` types.
