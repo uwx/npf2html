@@ -1,10 +1,10 @@
 {
   "name": "npf2html",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Converts Tumblr's Neue Post Format to plain HTML",
   "exports": {
-    "import": "./build/index.mjs",
-    "require": "./build/index.js"
+    "import": "./build/src/index.mjs",
+    "require": "./build/src/index.js"
   },
   "files": [
     "/build/src/**/*.js",
