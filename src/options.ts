@@ -1,8 +1,12 @@
 import {VisualMedia} from './media';
-import {Layout} from './index';
+import npf2html, {Layout} from './index';
 import {Renderer} from './renderer';
 
-/** Options for {@link npf2html}. */
+/**
+ * Options for {@link npf2html}.
+ *
+ * @category Main
+ */
 export interface Options {
   /**
    * The prefix to use for class names used to disambiguate block types and
@@ -24,7 +28,7 @@ export interface Options {
    * The {@link VisualMedia} to use for the asker's avatar if the post being
    * rendered is an ask.
    *
-   * This is avialable from `post.asking_avatar` in the Tumblr API.
+   * This is available from `post.asking_avatar` in the Tumblr API.
    */
   askingAvatar?: VisualMedia[];
 

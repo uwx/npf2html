@@ -51,6 +51,8 @@ const anonymousAvatar: VisualMedia[] = [
  *
  * Callers may extend this class and override any of its `render*()` methods to
  * change the way particular NPF components are rendered.
+ *
+ * @category Main
  */
 export class Renderer {
   /** @see Options.prefix */
@@ -116,7 +118,7 @@ export class Renderer {
   /**
    * Converts {@link media} to HTML.
    *
-   * If {@link options.alt} is passed, it's used as the alt text for the media.
+   * @param options.alt - The alt text for the media.
    */
   renderImageMedia(media: VisualMedia[], options?: {alt?: string}): string {
     return renderImageMedia(this, media, options);

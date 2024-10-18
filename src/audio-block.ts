@@ -6,6 +6,8 @@ import {Renderer} from './renderer';
  * An NPF audio type content block.
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-audio
+ *
+ * @category Content
  */
 export interface AudioBlock {
   type: 'audio';
@@ -56,7 +58,11 @@ export interface AudioBlock {
   attribution?: Attribution;
 }
 
-/** Converts {@link block} to HTML. */
+/**
+ * Converts {@link block} to HTML.
+ *
+ * @category Content
+ */
 export function renderAudio(renderer: Renderer, block: AudioBlock): string {
   let result = `<figure class="${renderer.prefix}-block-audio">`;
   if (block.media || !(block.embed_html || block.embed_url)) {

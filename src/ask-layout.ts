@@ -5,6 +5,8 @@ import {Renderer} from './renderer';
  * Content blocks that are part of an ask.
  *
  * @see https://www.tumblr.com/docs/npf#layout-block-type-ask
+ *
+ * @category Layout
  */
 export interface AskLayout {
   type: 'ask';
@@ -19,7 +21,11 @@ export interface AskLayout {
   attribution?: BlogAttribution;
 }
 
-/** Wraps {@link html} as an ask. */
+/**
+ * Wraps {@link html} as an ask.
+ *
+ * @category Layout
+ */
 export function renderAskLayout(
   renderer: Renderer,
   layout: AskLayout,

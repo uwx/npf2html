@@ -5,6 +5,8 @@ import {Renderer} from './renderer';
  * An NPF link type content block.
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-link
+ *
+ * @category Content
  */
 export interface LinkBlock {
   type: 'link';
@@ -30,7 +32,11 @@ export interface LinkBlock {
   poster?: VisualMedia[];
 }
 
-/** Convets {@link block} to HTML. */
+/**
+ * Convets {@link block} to HTML.
+ *
+ * @category Content
+ */
 export function renderLink(renderer: Renderer, block: LinkBlock): string {
   let result =
     `<a class="${renderer.prefix}-block-link"` +

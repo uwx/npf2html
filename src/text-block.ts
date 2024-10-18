@@ -5,10 +5,16 @@ import {Renderer} from './renderer';
  * An NPF text type content block.
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-text
+ *
+ * @category Content
  */
 export type TextBlock = TextBlockNoIndent | TextBlockIndented;
 
-/** The base interface for all types of text blocks. */
+/**
+ * The base interface for all types of text blocks.
+ *
+ * @category Content
+ */
 interface TextBlockBase {
   type: 'text';
 
@@ -38,12 +44,20 @@ interface TextBlockBase {
   formatting?: InlineFormat[];
 }
 
-/** A text block of a type that doesn't allow indentation. */
+/**
+ * A text block of a type that doesn't allow indentation.
+ *
+ * @category Content
+ */
 export interface TextBlockNoIndent extends TextBlockBase {
   subtype?: 'heading1' | 'heading2' | 'quirky' | 'quote' | 'chat';
 }
 
-/** A text block of a type that allows indentation. */
+/**
+ * A text block of a type that allows indentation.
+ *
+ * @category Content
+ */
 export interface TextBlockIndented extends TextBlockBase {
   /**
    * The subtype of text block.
@@ -56,7 +70,11 @@ export interface TextBlockIndented extends TextBlockBase {
   indent_level?: number;
 }
 
-/** Converts {@link block} to HTML. */
+/**
+ * Converts {@link block} to HTML.
+ *
+ * @category Content
+ */
 export function renderTextNoIndent(
   renderer: Renderer,
   block: TextBlockNoIndent
@@ -85,6 +103,8 @@ export function renderTextNoIndent(
  * entire thing; any other blocks are guaranteed to have the same subtype. The
  * string elements of {@link blocksAndNested} ar {@link TextBlockIndented}
  * objects which are more deeply nested and have already been converted to HTML.
+ *
+ * @category Content
  */
 export function renderTextIndented(
   renderer: Renderer,

@@ -21,9 +21,11 @@ export {
 } from './attribution';
 export {AudioBlock} from './audio-block';
 export {BlogInfo} from './blog-info';
+export {ImageBlock} from './image-block';
+export {LinkBlock} from './link-block';
 export {Media, VisualMedia} from './media';
 export {Options} from './options';
-export {PollBlock} from './poll-block';
+export {PollAnswer, PollBlock, PollSettings} from './poll-block';
 export {
   PaywallBlock,
   PaywallBlockCta,
@@ -45,6 +47,8 @@ export {VideoBlock, IFrame} from './video-block';
  * A single discrete unit of content.
  *
  * @see https://www.tumblr.com/docs/npf#content-blocks
+ *
+ * @category Content
  */
 export type ContentBlock =
   | AudioBlock
@@ -55,7 +59,11 @@ export type ContentBlock =
   | TextBlock
   | VideoBlock;
 
-/** A block of unknown type, not documented as part of the Tumblr API. */
+/**
+ * A block of unknown type, not documented as part of the Tumblr API.
+ *
+ * @category Content
+ */
 export interface UnknownBlock extends Record<string, unknown> {
   /** The type of the block. */
   type: string;
@@ -65,6 +73,8 @@ export interface UnknownBlock extends Record<string, unknown> {
  * A layout indicating how to lay out contents blocks.
  *
  * @see https://www.tumblr.com/docs/npf#layout-blocks
+ *
+ * @category Layout
  */
 export type Layout = AskLayout | RowsLayout;
 
@@ -125,6 +135,8 @@ function buildLayoutGroups(options?: Options): LayoutGroup[] {
 /**
  * Converts each NPF block in {@link blocks} to plain HTML and concatenates them
  * into a single string.
+ *
+ * @category Main
  */
 export default function npf2html(
   blocks: ContentBlock[],

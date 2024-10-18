@@ -12,12 +12,16 @@ Tumblr API to get the NPF for Tumblr posts.
 
 ## API
 
-This module exports a single function, `npf2html`, which takes a list of content
-blocks as provided by the Tumblr API's `post.content` and returns it as HTML.
-It's also recommended you pass in `post.layout` and `post.asking_avatar` as
-[options] to accurately reproduce the structure of the post.
+[**API Docs**](https://nex3.github.io/npf2html/)
 
-[options]: #options
+This module exports a primary entrypoint function, [`npf2html`], which takes a
+list of content blocks as provided by the Tumblr API's `post.content` and
+returns it as HTML. It's also recommended you pass in `post.layout` and
+`post.asking_avatar` as [options] to accurately reproduce the structure of the
+post.
+
+[`npf2html`]: https://nex3.github.io/npf2html/functions/default.html
+[options]: https://nex3.github.io/npf2html/interfaces/Options.html
 
 ```js
 import npf2html from 'npf2html';
@@ -41,34 +45,6 @@ console.log(npf2html(post.content, {
   askingAvatar: post.asking_avatar,
 }));
 ```
-
-### Options
-
-#### `prefix`
-
-This package adds various CSS classes to its output to disambiguate different
-elements. By default, these classes all begin with `npf-`, but you can pass the
-`prefix` option to change it to a different prefix (not including the "-").
-
-#### `layout`
-
-The [NPF layouts] for the given post. While this may not be necessary for
-rendering many simpler posts, it should almost always be passed directly from
-the Tumblr API's `post.layout` field.
-
-#### `askingAvatar`
-
-For a Tumblr ask, this is the avatar of the blog that sent the ask. While this
-isn't necessary for rendering non-ask posts, passing `undefined` in those cases
-is fine, to this should be passed directly from the Tumblr API's
-`post.asking_avatar` field any time the post *could be* an ask.
-
-[NPF layouts]: https://www.tumblr.com/docs/npf#layout-blocks
-
-#### `renderer`
-
-A custom subclass of the `Renderer` class which allows callers to override
-how individual components are rendered.
 
 ## Output
 

@@ -5,6 +5,8 @@ import {Renderer} from './renderer';
  * A single piece of inline formatting for a {@link TextBlock}.
  *
  * @see https://www.tumblr.com/docs/npf#inline-formatting-within-a-text-block
+ *
+ * @category Inline
  */
 export type InlineFormat =
   | InlineFormatBasic
@@ -25,6 +27,8 @@ interface InlineFormatBase {
  * Basic inline formatting types that require no additional information.
  *
  * @see https://www.tumblr.com/docs/npf#inline-format-types-bold-italic-strikethrough-small
+ *
+ * @category Inline
  */
 export interface InlineFormatBasic extends InlineFormatBase {
   type: 'bold' | 'italic' | 'strikethrough' | 'small';
@@ -34,6 +38,8 @@ export interface InlineFormatBasic extends InlineFormatBase {
  * An inline link.
  *
  * @see https://www.tumblr.com/docs/npf#inline-format-type-link
+ *
+ * @category Inline
  */
 export interface InlineFormatLink extends InlineFormatBase {
   type: 'link';
@@ -46,6 +52,8 @@ export interface InlineFormatLink extends InlineFormatBase {
  * A mention of another blog.
  *
  * @see https://www.tumblr.com/docs/npf#inline-format-type-mention
+ *
+ * @category Inline
  */
 export interface InlineFormatMention extends InlineFormatBase {
   type: 'mention';
@@ -58,6 +66,8 @@ export interface InlineFormatMention extends InlineFormatBase {
  * Colored text.
  *
  * @see https://www.tumblr.com/docs/npf#inline-format-type-color
+ *
+ * @category Inline
  */
 export interface InlineFormatColor extends InlineFormatBase {
   type: 'color';
@@ -156,6 +166,8 @@ function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
 /**
  * Applies the formatting specified by {@link format} to {@link html}, which may
  * already include nested formatting.
+ *
+ * @category Inline
  */
 export function renderInlineFormat(
   renderer: Renderer,

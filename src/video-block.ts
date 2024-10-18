@@ -6,6 +6,8 @@ import {Renderer} from './renderer';
  * An NPF video type content block.
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-video
+ *
+ * @category Content
  */
 export interface VideoBlock {
   type: 'video';
@@ -72,7 +74,11 @@ export interface IFrame {
   height: number;
 }
 
-/** Converts {@link block} to HTML. */
+/**
+ * Converts {@link block} to HTML.
+ *
+ * @category Content
+ */
 export function renderVideo(renderer: Renderer, block: VideoBlock): string {
   let result = `<figure class="${renderer.prefix}-block-video">`;
   if (block.media) {

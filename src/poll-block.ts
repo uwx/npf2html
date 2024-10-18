@@ -5,6 +5,8 @@ import {Renderer} from './renderer';
  *
  * This is not an officially-documented block type, so its documentation is
  * best-effort.
+ *
+ * @category Content
  */
 export interface PollBlock {
   type: 'poll';
@@ -31,7 +33,11 @@ export interface PollBlock {
   timestamp: number;
 }
 
-/** One possible answer to a poll. */
+/**
+ * One possible answer to a poll.
+ *
+ * @category Content
+ */
 export interface PollAnswer {
   /** The UUID for this answer. */
   client_id: string;
@@ -40,7 +46,11 @@ export interface PollAnswer {
   answer_text: string;
 }
 
-/** The settings used to create this poll. */
+/**
+ * The settings used to create this poll.
+ *
+ * @category Content
+ */
 export interface PollSettings {
   /** Whether the poll allows multiple choices. */
   multiple_choice: boolean;
@@ -59,7 +69,11 @@ export interface PollSettings {
   source: string;
 }
 
-/** Converts {@link block} to HTML. */
+/**
+ * Converts {@link block} to HTML.
+ *
+ * @category Content
+ */
 export function renderPoll(renderer: Renderer, block: PollBlock): string {
   let result =
     `<div class="${renderer.prefix}-block-poll">` +

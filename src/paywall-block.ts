@@ -4,6 +4,8 @@ import {Renderer} from './renderer';
  * An NPF paywall type content block.
  *
  * @see https://www.tumblr.com/docs/npf#content-block-type-paywall
+ *
+ * @category Content
  */
 export type PaywallBlock = PaywallBlockCta | PaywallBlockDivider;
 
@@ -21,7 +23,11 @@ interface PaywallBlockBase {
   is_visible?: boolean;
 }
 
-/** A CTA (unpaid) or disabled paywall block. */
+/**
+ * A CTA (unpaid) or disabled paywall block.
+ *
+ * @category Content
+ */
 export interface PaywallBlockCta extends PaywallBlockBase {
   subtype: 'cta' | 'disabled';
 
@@ -32,7 +38,11 @@ export interface PaywallBlockCta extends PaywallBlockBase {
   text: string;
 }
 
-/** A paywall block that appears as a divider. */
+/**
+ * A paywall block that appears as a divider.
+ *
+ * @category Content
+ */
 export interface PaywallBlockDivider extends PaywallBlockBase {
   subtype: 'divider';
 
@@ -43,7 +53,11 @@ export interface PaywallBlockDivider extends PaywallBlockBase {
   color?: string;
 }
 
-/** Converts {@link block} to HTML. */
+/**
+ * Converts {@link block} to HTML.
+ *
+ * @category Content
+ */
 export function renderPaywall(renderer: Renderer, block: PaywallBlock): string {
   if (block.is_visible === false) return '';
 

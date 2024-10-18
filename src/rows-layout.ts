@@ -4,6 +4,8 @@ import {Renderer} from './renderer';
  * Content blocks organized in rows, with variable elements per row.
  *
  * @see https://www.tumblr.com/docs/npf#layout-block-type-rows
+ *
+ * @category Layout
  */
 export interface RowsLayout {
   type: 'rows';
@@ -15,7 +17,11 @@ export interface RowsLayout {
   truncate_after?: number;
 }
 
-/** An object describing how to display a single row. */
+/**
+ * An object describing how to display a single row.
+ *
+ * @category Layout
+ */
 export interface RowsDisplay {
   /** An array of block indices to use in this row. */
   blocks: number[];
@@ -28,7 +34,11 @@ export interface RowsDisplay {
   mode?: {type: 'carousel'};
 }
 
-/** Wraps {@link html} as single row. */
+/**
+ * Wraps {@link html} as single row.
+ *
+ * @category Layout
+ */
 export function renderRowLayout(
   renderer: Renderer,
   display: RowsDisplay,
