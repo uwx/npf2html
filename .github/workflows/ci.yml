@@ -31,7 +31,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/') && github.repository == 'sass/npf2html'"
+    if: "startsWith(github.ref, 'refs/tags/') && github.repository == 'nex3/npf2html'"
     needs: [test]
 
     steps:
@@ -52,8 +52,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     runs-on: ubuntu-latest
-    if: "startsWith(github.ref, 'refs/tags/') && github.repository == 'sass/npf2html'"
-    needs: [test]
+    if: "startsWith(github.ref, 'refs/tags/') && github.repository == 'nex3/npf2html'"
+    needs: [deploy]
 
     steps:
       - uses: actions/checkout@v4
