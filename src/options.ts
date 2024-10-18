@@ -1,4 +1,6 @@
 import {VisualMedia} from './media';
+// Load npf2html for doc cross-references.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import npf2html, {Layout} from './index';
 import {Renderer} from './renderer';
 
