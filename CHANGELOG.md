@@ -1,3 +1,7 @@
+## 1.1.5
+
+* Fix ESM support.
+
 ## 1.1.4
 
 * No user-visible changes.
