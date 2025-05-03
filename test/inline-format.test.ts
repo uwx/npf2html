@@ -124,6 +124,14 @@ snapshotNpf2Html('HTML-escapes nested formatting once', [
   },
 ]);
 
+snapshotNpf2Html('correctly indexes through wide characters', [
+  {
+    type: 'text',
+    text: 'format 🌳 tree',
+    formatting: [{type: 'strikethrough', start: 7, end: 8}],
+  },
+]);
+
 // Regression test for #1
 snapshotNpf2Html('adjacent and overlapping (same format)', [
   {

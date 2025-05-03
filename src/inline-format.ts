@@ -161,7 +161,10 @@ function canMerge(format1: InlineFormat, format2: InlineFormat): boolean {
 }
 
 /** Builds the list of {@link InlineFormatSpan}s for {@link block}. */
-function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
+function buildFormatSpans(
+  text: string,
+  formatting: InlineFormat[]
+): InlineFormatSpan[] {
   // Sort formats first by start (earliest to latest), then by length (longest
   // to shortest). This ensures that earlier formats are never nested within
   // later ones.
@@ -176,17 +179,20 @@ function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
   // The fully-closed spans of formatted text.
   const spans: InlineFormatSpan[] = [];
 
+  let codeUnitIndex = 0;
   let codePointIndex = 0;
   const end = Math.max(...formats.map(format => format.end));
-  for (let i = 0; i < end; i++) {
+  while (codeUnitIndex < end) {
     while (codePointIndex === formats[0]?.start) {
-      open.push({format: formats.shift()!, start: i, children: []});
+      open.push({format: formats.shift()!, start: codeUnitIndex, children: []});
     }
 
     const outermostClosed = open.findIndex(
       span => span.format.end === codePointIndex + 1
     );
 
+    const codePointLength =
+      text.charCodeAt(codeUnitIndex) >> 10 === 0x36 ? 2 : 1;
     if (outermostClosed !== -1) {
       // Tumblr allows inline formats to overlap without being subsets of one
       // another. To handle this in HTML, we track the formats that aren't
@@ -196,16 +202,17 @@ function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
         const span = open[j];
         (j === 0 ? spans : open[j - 1].children).push({
           ...span,
-          end: i + 1,
+          end: codeUnitIndex + codePointLength,
         });
         if (span.format.end > codePointIndex + 1) {
-          stillOpen.push({...span, start: i + 1});
+          stillOpen.push({...span, start: codeUnitIndex + codePointLength});
         }
       }
       -open.splice(outermostClosed);
       open.push(...stillOpen);
     }
 
+    codeUnitIndex += codePointLength;
     codePointIndex++;
   }
 
@@ -283,6 +290,6 @@ export function formatText(
   return renderSpans(
     0,
     text.length,
-    buildFormatSpans(mergeAdjacentFormats(formatting))
+    buildFormatSpans(text, mergeAdjacentFormats(formatting))
   );
 }

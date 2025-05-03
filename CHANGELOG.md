@@ -5,6 +5,8 @@
 
 * Improve the HTML output for adjacent inline formatting spans.
 
+* Fix inline text rendering with UTF-16 surrogate pair characters such as emoji.
+
 ## 1.1.6
 
 * Generate links for image blocks.
