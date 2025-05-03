@@ -123,3 +123,28 @@ snapshotNpf2Html('HTML-escapes nested formatting once', [
     ],
   },
 ]);
+
+// Regression test for #1
+snapshotNpf2Html('adjacent and overlapping', [
+  {
+    type: 'text',
+    text: 'before [left][right] after',
+    formatting: [
+      {
+        type: 'bold',
+        start: 7,
+        end: 13,
+      },
+      {
+        type: 'italic',
+        start: 13,
+        end: 20,
+      },
+      {
+        type: 'bold',
+        start: 13,
+        end: 30,
+      },
+    ],
+  },
+]);

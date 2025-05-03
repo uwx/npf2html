@@ -1,3 +1,8 @@
+## 1.1.7
+
+* Fix a bug where adjacent inline formatting spans could produce invalid HTML
+  and duplicated text.
+
 ## 1.1.6
 
 * Generate links for image blocks.

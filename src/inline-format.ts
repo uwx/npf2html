@@ -130,7 +130,7 @@ function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
     }
 
     const outermostClosed = open.findIndex(
-      span => span.format.end === codePointIndex
+      span => span.format.end === codePointIndex + 1
     );
 
     if (outermostClosed !== -1) {
@@ -142,10 +142,10 @@ function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
         const span = open[j];
         (j === 0 ? spans : open[j - 1].children).push({
           ...span,
-          end: i,
+          end: i + 1,
         });
-        if (span.format.end > codePointIndex) {
-          stillOpen.push({...span, start: i});
+        if (span.format.end > codePointIndex + 1) {
+          stillOpen.push({...span, start: i + 1});
         }
       }
       -open.splice(outermostClosed);
