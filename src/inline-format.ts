@@ -106,6 +106,60 @@ interface InlineFormatSpan {
   children: InlineFormatSpan[];
 }
 
+/**
+ * Pre-processes {@link formatting} to combine any adjacent identical formats.
+ * Tumblr sometimes splits these up when other formatting is also present, so
+ * this produces cleaner HTML.
+ **/
+function mergeAdjacentFormats(formatting: InlineFormat[]): InlineFormat[] {
+  // A map from format types to the index in mergedFormats of the most recent
+  // occurance of those formats.
+  const lastFormatOfType: Partial<Record<InlineFormat['type'], number>> = {};
+  const mergedFormats: InlineFormat[] = [];
+
+  for (const format of formatting) {
+    // Never merge links or mentions.
+    if (format.type === 'link' || format.type === 'mention') {
+      mergedFormats.push(format);
+      continue;
+    }
+
+    const lastIndex = lastFormatOfType[format.type];
+    if (lastIndex !== undefined) {
+      const last = mergedFormats[lastIndex];
+      if (last && canMerge(last, format)) {
+        mergedFormats[lastIndex] = {...last, end: format.end};
+        continue;
+      }
+    }
+
+    lastFormatOfType[format.type] = mergedFormats.length;
+    mergedFormats.push(format);
+  }
+
+  return mergedFormats;
+}
+
+/** Returns whether two {@link InlineFormat}s can be safely merged. */
+function canMerge(format1: InlineFormat, format2: InlineFormat): boolean {
+  if (format1.end !== format2.start) return false;
+  if (format1.type !== format2.type) return false;
+  switch (format1.type) {
+    case 'bold':
+    case 'italic':
+    case 'strikethrough':
+    case 'small':
+      return true;
+
+    case 'link':
+    case 'mention':
+      return false;
+
+    case 'color':
+      return format1.hex === (format2 as InlineFormatColor).hex;
+  }
+}
+
 /** Builds the list of {@link InlineFormatSpan}s for {@link block}. */
 function buildFormatSpans(formatting: InlineFormat[]): InlineFormatSpan[] {
   // Sort formats first by start (earliest to latest), then by length (longest
@@ -226,5 +280,9 @@ export function formatText(
     return result + renderer.escape(text.substring(i, end));
   };
 
-  return renderSpans(0, text.length, buildFormatSpans(formatting));
+  return renderSpans(
+    0,
+    text.length,
+    buildFormatSpans(mergeAdjacentFormats(formatting))
+  );
 }

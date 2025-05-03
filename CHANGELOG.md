@@ -3,6 +3,8 @@
 * Fix a bug where adjacent inline formatting spans could produce invalid HTML
   and duplicated text.
 
+* Improve the HTML output for adjacent inline formatting spans.
+
 ## 1.1.6
 
 * Generate links for image blocks.
